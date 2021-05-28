@@ -6,10 +6,10 @@ mu=2;
 weight=0:1:10;
 slope=0:1:5;
 intercept=20:1:25;
-% height1=sig*randn(1,length(weight))+mu;
-% height2=sig*randn(1,length(weight))+mu; 
-% height3=sig*randn(1,length(weight))+mu; 
-height1=(25-20).*rand(1,length(weight)) + 20;
+
+%temperature data from 3 independent sensors
+
+height1=(25-20).*rand(1,length(weight)) + 20; 
 height2=(25-20).*rand(1,length(weight)) + 20;
 height3=(25-20).*rand(1,length(weight)) + 20;
 hold on

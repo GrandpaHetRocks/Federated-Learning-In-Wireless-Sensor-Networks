@@ -1,10 +1,10 @@
 tic
 sig=2;
 mu=2;
-weight=0:1:10;
+weight=0:0.1:10;
 height=sig*randn(1,length(weight))+mu; 
 % height=2*weight+3;
-%height=sin(weight);
+% height=sin(weight);
 plot(weight,height,"linewidth",1.5)
 slope=-5:1:5;
 intercept=0:1:5;
@@ -40,12 +40,21 @@ figure
  while(steps<=-0.01 && iter<=niter)  %terminating conditions
      gradients=0;  %gradient wrt slope
      gradienti=0;  %gradient wrt intercept
-     for i=1:length(weight)
-         gradients=gradients+(-2*(height(i)-(weight(i)*k+l))*weight(i));
+     %making a minibatch of 10 random height values (stochastic nature)
+     R = randsample(100,10,false);
+     R=R';
+     R=sort(R);
+     height1=[];
+     for ii=1:10
+         height1=[height1 height(R(ii))];
+     end
+     %height1 is our minibatch
+     for i=1:length(height1)
+         gradients=gradients+(-2*(height1(i)-(weight(R(i))*k+l))*weight(R(i)));
      end
      
-     for i=1:length(weight)
-         gradienti=gradienti+(-2*(height(i)-(weight(i)*k+l)));
+     for i=1:length(height1)
+         gradienti=gradienti+(-2*(height1(i)-(weight(R(i))*k+l)));
      end
 %      gradients
      steps=gradients*lrs;

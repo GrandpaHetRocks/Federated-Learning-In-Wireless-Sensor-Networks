@@ -12,6 +12,9 @@ intercept=20:1:25;
 height1=(25-20).*rand(1,length(weight)) + 20; 
 height2=(25-20).*rand(1,length(weight)) + 20;
 height3=(25-20).*rand(1,length(weight)) + 20;
+height1=2*weight+22;
+height2=2*weight+21;
+height3=2*weight+23;
 hold on
 plot(weight,height1,"linewidth",1.5)
 plot(weight,height2,"linewidth",1.5)
@@ -82,12 +85,12 @@ figure
 niter=1000;
  steps=-inf;
  stepi=-inf;
- lrs=0.0002;  %learning rate for calculating grad wrt slope
- lri=0.01;   %learning rate for calculating grad wrt intercept
+ lrs=0.0003;  %learning rate for calculating grad wrt slope
+ lri=0.0009;   %learning rate for calculating grad wrt intercept
  iter=0;
  k=slope(1);  %starting from inital value of slope
  l=intercept(1); %starting from inital value of intercept
- while(steps<=-0.01 && iter<=niter)  %terminating conditions
+ while(steps<=-0.01 && iter<=niter && stepi<=-0.01)  %terminating conditions
      gradients1=0;  %gradient wrt slope (client 1)
      gradienti1=0;  %gradient wrt intercept (client 1)
      gradients2=0;  %gradient wrt slope (client 2)
@@ -118,8 +121,12 @@ niter=1000;
          gradienti3=gradienti3+(-2*(height3(i)-(weight(i)*k+l)));
      end
 %      gradients
+       if(steps<=-0.01)
      steps=(gradients1+gradients2+gradients3)*lrs/3;  %server side averaging
+       end
+       if(stepi<=-0.01)
      stepi=(gradienti1+gradienti2+gradienti3)*lri/3;  %server side averaging
+       end
      k=k-steps;
      l=l-stepi;
      iter=iter+1;

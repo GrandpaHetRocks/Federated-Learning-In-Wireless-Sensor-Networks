@@ -32,12 +32,12 @@ figure
  niter=1000;
  steps=-inf;
  stepi=-inf;
- lrs=0.0002;  %learning rate for calculating grad wrt slope
+ lrs=0.0003;  %learning rate for calculating grad wrt slope
  lri=0.0009;   %learning rate for calculating grad wrt intercept
  iter=0;
  k=slope(1);  %starting from inital value of slope
  l=intercept(1); %starting from inital value of intercept
- while(steps<=-0.01 && iter<=niter)  %terminating conditions
+ while(steps<=-0.01 && iter<=niter && stepi<=-0.01)  %terminating conditions
      gradients=0;  %gradient wrt slope
      gradienti=0;  %gradient wrt intercept
      %making a minibatch of 10 random height values (stochastic nature)
@@ -57,10 +57,15 @@ figure
          gradienti=gradienti+(-2*(height1(i)-(weight(R(i))*k+l)));
      end
 %      gradients
+    if(steps<=-0.01)
      steps=gradients*lrs;
+    end
+    if(stepi<=-0.01)
      stepi=gradienti*lri;
+    end
      k=k-steps;
      l=l-stepi;
+     stepi
      iter=iter+1;
  end
  predslope=k

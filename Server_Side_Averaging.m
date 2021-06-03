@@ -1,5 +1,6 @@
 %assuming all the data is available on the server and the average data is
-%taken for fitting
+%taken for fitting. Here the issue of privacy comes in since the entire
+%data is available at the server.
 
 tic
 sig=2;

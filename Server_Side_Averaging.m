@@ -1,4 +1,5 @@
-%federated SGD with number of clients=3, C=1
+%assuming all the data is available on the server and the average data is
+%taken for fitting
 
 tic
 sig=2;
@@ -90,43 +91,24 @@ niter=1000;
  iter=0;
  k=slope(1);  %starting from inital value of slope
  l=intercept(1); %starting from inital value of intercept
- while(steps<=-0.01 && iter<=niter && stepi<=-0.01)  %terminating conditions
-     gradients1=0;  %gradient wrt slope (client 1)
-     gradienti1=0;  %gradient wrt intercept (client 1)
-     gradients2=0;  %gradient wrt slope (client 2)
-     gradienti2=0;  %gradient wrt intercept (client 2) 
-     gradients3=0;  %gradient wrt slope (client 3)
-     gradienti3=0;  %gradient wrt intercept (client 3)
+ while(steps<=-0.01 && iter<=niter)  %terminating conditions
+     gradients1=0;  %gradient wrt slope 
+     gradienti1=0;  %gradient wrt intercept 
+     height=(height1+height2+height3)/3; %assuming all data is available at server
      for i=1:length(weight)
-         gradients1=gradients1+(-2*(height1(i)-(weight(i)*k+l))*weight(i));
+         gradients1=gradients1+(-2*(height(i)-(weight(i)*k+l))*weight(i));
      end
      
      for i=1:length(weight)
-         gradienti1=gradienti1+(-2*(height1(i)-(weight(i)*k+l)));
-     end
-     
-     for i=1:length(weight)
-         gradients2=gradients2+(-2*(height2(i)-(weight(i)*k+l))*weight(i));
-     end
-     
-     for i=1:length(weight)
-         gradienti2=gradienti2+(-2*(height2(i)-(weight(i)*k+l)));
-     end
-     
-     for i=1:length(weight)
-         gradients3=gradients3+(-2*(height3(i)-(weight(i)*k+l))*weight(i));
-     end
-     
-     for i=1:length(weight)
-         gradienti3=gradienti3+(-2*(height3(i)-(weight(i)*k+l)));
+         gradienti1=gradienti1+(-2*(height(i)-(weight(i)*k+l)));
      end
 %      gradients
-       if(steps<=-0.01)
-     steps=(gradients1+gradients2+gradients3)*lrs/3;  %server side averaging
-       end
-       if(stepi<=-0.01)
-     stepi=(gradienti1+gradienti2+gradienti3)*lri/3;  %server side averaging
-       end
+    if(steps<=-0.01)
+     steps=gradients1*lrs;  %server side 
+    end
+    if(stepi<=-0.01)
+     stepi=gradienti1*lri;  %server side 
+    end
      k=k-steps;
      l=l-stepi;
      iter=iter+1;

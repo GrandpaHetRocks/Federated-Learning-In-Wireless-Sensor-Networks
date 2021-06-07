@@ -19,8 +19,8 @@ for images, labels in trainloader:
     print(images.size(), labels.size())
     break
 
-batches = iter(trainloader)
-one_batch = next(batches)
+batches = iter(trainloader) #batches of size 64
+one_batch = next(batches) #using a single image
 images, labels = one_batch
 len(images)
 plt.imshow(images[0].numpy().squeeze(), cmap='Greys_r')

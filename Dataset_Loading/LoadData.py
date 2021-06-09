@@ -6,8 +6,14 @@ Created on Tue Jun  8 23:02:59 2021
 """
 from Dataset import load_dataset,getImage
 import matplotlib.pyplot as plt
+import torch
+import syft
 
-trainset,testset,train_group,test_group=load_dataset(10,"noniid")
+hook = syft.TorchHook(torch)
+
+bob = syft.VirtualWorker(hook, id='bob')
+print(bob)
+trainset,testset,train_group,test_group=load_dataset(10,"iid")
 
 first_client_batches=getImage(trainset,train_group[0],64)
 

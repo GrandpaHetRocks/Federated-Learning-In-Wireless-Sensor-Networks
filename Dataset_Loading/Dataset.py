@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+#-*-coding:utf-8-*-
 """
 Created on Tue Jun  8 22:28:22 2021
 
@@ -24,7 +24,7 @@ def mnistIID(dataset,num_users):#this function randomly chooses 60k/10 (assuming
     return users_dict
 
 def mnistnonIID(dataset,num_users,test):#function divides dataset into classes and each client gets random 2 classes to train on
-    # classes, images=20, 500
+    # classes,images=20,500
     if test:
         classes=20
         images=int(len(dataset)/classes)
@@ -33,96 +33,96 @@ def mnistnonIID(dataset,num_users,test):#function divides dataset into classes a
     indices=np.arange(classes*images)
     unsorted_labels=dataset.train_labels.numpy()
 
-    indices_unsortedlabels=np.vstack((indices, unsorted_labels))
-    indices_labels=indices_unsortedlabels[:, indices_unsortedlabels[1, :].argsort()]
-    indices=indices_labels[0, :]
+    indices_unsortedlabels=np.vstack((indices,unsorted_labels)) #make a container for indices and labels so they move together
+    indices_labels=indices_unsortedlabels[:,indices_unsortedlabels[1,:].argsort()]
+    indices=indices_labels[0,:]
 
     for i in range(num_users):
         np.random.seed(i)
-        temp=set(np.random.choice(classes_indx, 2, replace=False))
-        classes_indx=list(set(classes_indx) - temp)
+        temp=set(np.random.choice(classes_indx,2,replace=False)) #random 2 classes to each client
+        classes_indx=list(set(classes_indx)-temp)
         for t in temp:
-            users_dict[i]=np.concatenate((users_dict[i], indices[t*images:(t+1)*images]), axis=0)
+            users_dict[i]=np.concatenate((users_dict[i],indices[t*images:(t+1)*images]),axis=0)
     return users_dict
 
 def mnistnonIIDUnequal(dataset,num_users,test):#calsses are there but each client gets different number of classes to train on
-    classes, images=1200, 50
+    classes,images=1200,50
     if test:
-        classes, images=200, 50
+        classes,images=200,50
     classes_indx=[i for i in range(classes)]
     users_dict={i:np.array([]) for i in range(num_users)}
     indices=np.arange(classes*images)
     unsorted_labels=dataset.train_labels.numpy()
 
-    indices_unsortedlabels=np.vstack((indices, unsorted_labels))
-    indices_labels=indices_unsortedlabels[:, indices_unsortedlabels[1,:].argsort()]
+    indices_unsortedlabels=np.vstack((indices,unsorted_labels))
+    indices_labels=indices_unsortedlabels[:,indices_unsortedlabels[1,:].argsort()]
     indices=indices_labels[0,:]
 
-    min_cls_per_client=1
-    max_cls_per_client=30
+    min_cls_per_client=1 #a client has to chose at least one class
+    max_cls_per_client=30 #client can't choose more than 30 classes
 
-    random_selected_classes=np.random.randint(min_cls_per_client, max_cls_per_client+1, size=num_users)
-    random_selected_classes=np.around(random_selected_classes / sum(random_selected_classes) * classes)
+    random_selected_classes=np.random.randint(min_cls_per_client,max_cls_per_client+1,size=num_users)
+    random_selected_classes=np.around(random_selected_classes/sum(random_selected_classes)*classes)
     random_selected_classes=random_selected_classes.astype(int)
 
-    if sum(random_selected_classes) > classes:
+    if sum(random_selected_classes)>classes:
         for i in range(num_users):
             np.random.seed(i)
-            temp=set(np.random.choice(classes_indx, 1, replace=False))
-            classes_indx=list(set(classes_indx) - temp)
+            temp=set(np.random.choice(classes_indx,1,replace=False))
+            classes_indx=list(set(classes_indx)-temp)
             for t in temp:
-                users_dict[i]=np.concatenate((users_dict[i], indices[t*images:(t+1)*images]), axis=0)
+                users_dict[i]=np.concatenate((users_dict[i],indices[t*images:(t+1)*images]),axis=0)
 
         random_selected_classes=random_selected_classes-1
 
         for i in range(num_users):
-            if len(classes_indx) == 0:
+            if len(classes_indx)==0:
                 continue
             class_size=random_selected_classes[i]
-            if class_size > len(classes_indx):
+            if class_size>len(classes_indx):
                 class_size=len(classes_indx)
             np.random.seed(i)
-            temp=set(np.random.choice(classes_indx, class_size, replace=False))
-            classes_indx=list(set(classes_indx) - temp)
+            temp=set(np.random.choice(classes_indx,class_size,replace=False))
+            classes_indx=list(set(classes_indx)-temp)
             for t in temp:
-                users_dict[i]=np.concatenate((users_dict[i], indices[t*images:(t+1)*images]), axis=0)
+                users_dict[i]=np.concatenate((users_dict[i],indices[t*images:(t+1)*images]),axis=0)
     else:
 
         for i in range(num_users):
             class_size=random_selected_classes[i]
             np.random.seed(i)
-            temp=set(np.random.choice(classes_indx, class_size, replace=False))
-            classes_indx=list(set(classes_indx) - temp)
+            temp=set(np.random.choice(classes_indx,class_size,replace=False))
+            classes_indx=list(set(classes_indx)-temp)
             for t in temp:
-                users_dict[i]=np.concatenate((users_dict[i], indices[t*images:(t+1)*images]), axis=0)
+                users_dict[i]=np.concatenate((users_dict[i],indices[t*images:(t+1)*images]),axis=0)
 
-        if len(classes_indx) > 0:
+        if len(classes_indx)>0:
             class_size=len(classes_indx)
-            j=min(users_dict, key=lambda x:len(users_dict.get(x)))
-            temp=set(np.random.choice(classes_indx, class_size, replace=False))
-            classes_indx=list(set(classes_indx) - temp)
+            j=min(users_dict,key=lambda x:len(users_dict.get(x)))
+            temp=set(np.random.choice(classes_indx,class_size,replace=False))
+            classes_indx=list(set(classes_indx)-temp)
             for t in temp:
-                users_dict[j]=np.concatenate((users_dict[j], indices[t*images:(t+1)*images]), axis=0)
+                users_dict[j]=np.concatenate((users_dict[j],indices[t*images:(t+1)*images]),axis=0)
 
     return users_dict
 
 
 
 def load_dataset(num_users,iidtype):#this function helps load the datasets we made using mnistIID
-    transform=transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,),(0.3081,))])
-    trainset=torchvision.datasets.MNIST(root="./", train= False, transform=transform, download=False)
-    testset=torchvision.datasets.MNIST(root="./", train= False, transform=transform, download=False)
+    transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,),(0.3081,))])
+    trainset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
+    testset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
     train_group=None
     test_group=None
-    if iidtype == 'iid':
-        train_group=mnistIID(trainset, num_users)
-        test_group=mnistIID(testset, num_users)
-    elif iidtype == 'noniid':
-        train_group=mnistnonIID(trainset, num_users, True)
-        test_group=mnistnonIID(testset, num_users, True)
+    if iidtype=='iid':
+        train_group=mnistIID(trainset,num_users)
+        test_group=mnistIID(testset,num_users)
+    elif iidtype=='noniid':
+        train_group=mnistnonIID(trainset,num_users,True)
+        test_group=mnistnonIID(testset,num_users,True)
     else:
-        train_group=mnistnonIIDUnequal(trainset, num_users,True)
-        test_group=mnistnonIIDUnequal(testset, num_users, True)
+        train_group=mnistnonIIDUnequal(trainset,num_users,True)
+        test_group=mnistnonIIDUnequal(testset,num_users,True)
     return trainset,testset,train_group,test_group
 
 class FedDataset(Dataset):#this class helps connect the random indices with the image+label container in the dataset

@@ -32,7 +32,7 @@ class Arguments():
         self.images = 10000
         self.clients = 10
         self.rounds = 5
-        self.epochs = 2
+        self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
         self.C = 0.9 #fraction of clients used in the round
@@ -94,35 +94,64 @@ class Net(nn.Module):
     
 def ClientUpdate(args, device, client):
     client['model'].train()
+    #simulating a wireless channel
+    snr=random.randint(0,40)   #tamper here to make the channel good/bad :P
+    #snr=40
+    print("SNR= ",snr)
+    snr__=10**(snr/10)
+    std=math.sqrt(P/snr__) #channel noise
+    x=random.random()
+    y=random.random()
+    h=complex(x,y)
+    data=client['model'].conv1.weight
+    data=data*math.sqrt(P) #transmitted signal
+    data=h*data+(torch.randn(data.size())*std) #channel affecting data
+    data=data/(math.sqrt(P)*(h))  #demodulating received data
+    data=data.real #demodulating received data
+    client['model'].conv1.weight.data=data
+    
+    data=client['model'].conv2.weight
+    data=data*math.sqrt(P) #transmitted signal
+    data=h*data+(torch.randn(data.size())*std) #channel affecting data
+    data=data/(math.sqrt(P)*(h))  #demodulating received data
+    data=data.real #demodulating received data
+    client['model'].conv2.weight.data=data
+    
+    #print(client['model'].conv1.weight.size)
     client['model'].send(client['hook'])
     
-    for epoch in range(1, args.epochs + 1):
-        #simulating a wireless channel
-        snr=random.randint(-20,40)
-        #snr=40
-        print("SNR= ",snr)
-        snr__=10**(snr/10)
-        std=math.sqrt(P/snr__) #channel noise
-        x=random.random()
-        y=random.random()
-        h=complex(x,y)
-        h=math.sqrt(P)*(h)
-        #h=math.sqrt(P)*abs(h)
-        for batch_idx, (data, target) in enumerate(client['trainset']): #send image and label to client
-            # print(data)
-            #data1=data.numpy()
-            #print(data1)
-            #print(data1)
-            # for i in range (len(data1)):
-            #     for j in range(len(data1[i])):
-            #         for k in range(len(data1[i][j])):
-            #             b = Bits().join(Bits(float=x, length=64) for x in data1[i][j][k])
+    if(snr>30): #...............................................checking if channel is good enough for transmission..................................
+        for epoch in range(1, args.epochs + 1):
             
-            data=h*data+(torch.randn(data.size())*std) #channel affecting data
-            data=data/(math.sqrt(P)*(h))#demodulating received data
-            data=data.real #demodulating received data
-            if(snr>0): #checking if channel is good enough for transmission
-                #print("SNR=",snr)
+            # snr=random.randint(-20,40)
+            # #snr=40
+            # print("SNR= ",snr)
+            # snr__=10**(snr/10)
+            # std=math.sqrt(P/snr__) #channel noise
+            # x=random.random()
+            # y=random.random()
+            # h=complex(x,y)
+            #h=math.sqrt(P)*(h)
+            #h=math.sqrt(P)*abs(h)
+            for batch_idx, (data, target) in enumerate(client['trainset']): #send image and label to client
+                # print(data)
+                # data1=data.numpy()
+                # print(data1)
+                # print(data1)
+                # for i in range (len(data1)):
+                #     for j in range(len(data1[i])):
+                #         for k in range(len(data1[i][j])):
+                #             b = Bits().join(Bits(float=x, length=64) for x in data1[i][j][k])
+                
+                
+                # data=data*math.sqrt(P) #transmitted signal
+                # data=h*data+(torch.randn(data.size())*std) #channel affecting data
+                # data=data/(math.sqrt(P)*(h))  #demodulating received data
+                # data=data.real #demodulating received data
+                
+                
+                # if(snr>-100): 
+                    #print("SNR=",snr)
                 data = data.send(client['hook'])
                 target = target.send(client['hook'])
                 
@@ -139,9 +168,9 @@ def ClientUpdate(args, device, client):
                         client['hook'].id,
                         epoch, batch_idx * args.local_batches, len(client['trainset']) * args.local_batches, 
                         100. * batch_idx / len(client['trainset']), loss))
-            else:
-                print("Poor Channel")
-                break
+    else:
+        print("Poor Channel")
+            
                     
     client['model'].get()
     
@@ -196,6 +225,7 @@ for fed_round in range(args.rounds):
     active_clients = [clients[i] for i in active_clients_inds]
     
     # Training 
+    #even slot
     for client in active_clients:
         ClientUpdate(args, device, client)
     
@@ -203,7 +233,9 @@ for fed_round in range(args.rounds):
 #     for client in active_clients:
 #         test(args, client['model'], device, client['testset'], client['hook'].id)
     
+    
     # Averaging 
+        #odd slot
     global_model = averageModels(global_model, active_clients)
     
     # Testing the average model

@@ -30,8 +30,8 @@ stream = BitStream()
 class Arguments():
     def __init__(self):
         self.images = 10000
-        self.clients = 10
-        self.rounds = 5
+        self.clients = 30
+        self.rounds = 2
         self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
@@ -93,6 +93,7 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
     
 def ClientUpdate(args, device, client):
+    gc=False
     client['model'].train()
     #simulating a wireless channel
     snr=random.randint(0,40)   #tamper here to make the channel good/bad :P
@@ -103,6 +104,8 @@ def ClientUpdate(args, device, client):
     x=random.random()
     y=random.random()
     h=complex(x,y)
+    
+    
     data=client['model'].conv1.weight
     data=data*math.sqrt(P) #transmitted signal
     data=h*data+(torch.randn(data.size())*std) #channel affecting data
@@ -119,8 +122,10 @@ def ClientUpdate(args, device, client):
     
     #print(client['model'].conv1.weight.size)
     client['model'].send(client['hook'])
+    print("Client:",client['hook'].id)
     
-    if(snr>30): #...............................................checking if channel is good enough for transmission..................................
+    if(snr>20): #...............................................checking if channel is good enough for transmission..................................
+        gc=True #considering the client model for averaging
         for epoch in range(1, args.epochs + 1):
             
             # snr=random.randint(-20,40)
@@ -133,7 +138,7 @@ def ClientUpdate(args, device, client):
             # h=complex(x,y)
             #h=math.sqrt(P)*(h)
             #h=math.sqrt(P)*abs(h)
-            for batch_idx, (data, target) in enumerate(client['trainset']): #send image and label to client
+            for batch_idx, (data, target) in enumerate(client['trainset']): 
                 # print(data)
                 # data1=data.numpy()
                 # print(data1)
@@ -169,10 +174,12 @@ def ClientUpdate(args, device, client):
                         epoch, batch_idx * args.local_batches, len(client['trainset']) * args.local_batches, 
                         100. * batch_idx / len(client['trainset']), loss))
     else:
-        print("Poor Channel")
+        print("Poor Channel, client not taken for averaging in this round")
             
                     
     client['model'].get()
+    print()
+    return gc
     
 
 def test(args, model, device, test_loader, name):
@@ -205,8 +212,12 @@ for client in clients: #give the model and optimizer to every client
     # {torch.nn.Linear},  # a set of layers to dynamically quantize
     # dtype=torch.fp)  # the target dtype for quantized weights
     client['optim'] = optim.SGD(client['model'].parameters(), lr=args.lr)
+    
+
 
 for fed_round in range(args.rounds):
+    
+    client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
     
 #     uncomment if you want a random fraction for C every round
 #     args.C = float(format(np.random.random(), '.1f'))
@@ -227,7 +238,9 @@ for fed_round in range(args.rounds):
     # Training 
     #even slot
     for client in active_clients:
-        ClientUpdate(args, device, client)
+        goodchannel=ClientUpdate(args, device, client)
+        if(goodchannel):
+            client_good_channel.append(client)
     
 #     # Testing 
 #     for client in active_clients:
@@ -236,7 +249,13 @@ for fed_round in range(args.rounds):
     
     # Averaging 
         #odd slot
-    global_model = averageModels(global_model, active_clients)
+    print()
+    print("Clients having a good channel and considered for averaging")
+    for no in range (len(client_good_channel)):
+        print(client_good_channel[no]['hook'].id)
+    global_model = averageModels(global_model, client_good_channel)
+    #global_model = averageModels(global_model, active_clients)
+    #print(active_clients==client_good_channel)
     
     # Testing the average model
     test(args, global_model, device, global_test_loader, 'Global')

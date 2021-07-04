@@ -27,7 +27,7 @@ from bitstring import *
 P=2 #signal power
 #stream = BitStream()
 key=[]
-for i in range (10000):
+for i in range (10000): #generating a random password to activate training (Pilot signal)
     temp=random.randint(0,1)
     key.append(temp)
 

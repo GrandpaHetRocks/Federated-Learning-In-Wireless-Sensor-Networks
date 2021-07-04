@@ -24,9 +24,32 @@ import random
 import math
 from bitstring import *
 
-P=2; #signal power
-stream = BitStream()
+P=2 #signal power
+#stream = BitStream()
+key=[]
+for i in range (10000):
+    temp=random.randint(0,1)
+    key.append(temp)
 
+key1=[0]*len(key)
+for i in range (len(key)):   #bpsk modulation
+    if(key[i]==1):
+        #print("yay")
+        key1[i]=-math.sqrt(P)
+    else:
+        key1[i]=math.sqrt(P)
+
+#print(key)
+        
+key_np=np.array(key1)
+
+#print(key)
+#key=np.fromstring(key)
+#key1=key.*5
+# for i in range (10000):
+#     temp=random.randint(0,1)
+#     key1.append(temp)
+#print(np.bitwise_xor(key, key1))
 class Arguments():
     def __init__(self):
         self.images = 10000
@@ -61,7 +84,7 @@ for i in range(args.clients):
     
 global_train, global_test, train_group, test_group = load_dataset(args.clients, args.iid) #load data
 
-for inx, client in enumerate(clients):  #return actual image for each client
+for inx, client in enumerate(clients):  #return actual image set for each client
     trainset_ind_list = list(train_group[inx]) 
     client['trainset'] = getImage(global_train, trainset_ind_list, args.local_batches)
     client['testset'] = getImage(global_test, list(test_group[inx]), args.local_batches)
@@ -75,14 +98,14 @@ global_test_loader = DataLoader(global_test_dataset, batch_size=args.local_batch
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.quant = torch.quantization.QuantStub()
+        #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 20, 5, 1)
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, 500)
         self.fc2 = nn.Linear(500, 10)
 
     def forward(self, x):
-        x=self.quant(x)
+        #x=self.quant(x)
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
@@ -92,11 +115,11 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
     
-def ClientUpdate(args, device, client):
+def ClientUpdate(args, device, client,key_np,key):
     gc=False
     client['model'].train()
     #simulating a wireless channel
-    snr=random.randint(0,40)   #tamper here to make the channel good/bad :P
+    snr=random.randint(-10,40)   #tamper here to make the channel good/bad :P
     #snr=40
     print("SNR= ",snr)
     snr__=10**(snr/10)
@@ -124,7 +147,29 @@ def ClientUpdate(args, device, client):
     client['model'].send(client['hook'])
     print("Client:",client['hook'].id)
     
-    if(snr>20): #...............................................checking if channel is good enough for transmission..................................
+    key_np_received=h*key_np+(np.random.randn(len(key_np))*std*2)
+    #print(key_np_received)
+    key_np_received=(key_np_received/(h)).real
+    
+    for o in range (len(key_np_received)):  #demodulation bpsk
+        if(key_np_received[o]>=0):
+            key_np_received[o]=0
+        else:
+            key_np_received[o]=1
+    
+    key_np_received=key_np_received.tolist()
+    key_np_received = [int(item) for item in key_np_received]
+    #key_np=key_np.tolist()
+    
+    #print(key_np_received)
+    #print(key==key_np_received)
+    #print(sum(np.bitwise_xor(key,key_np_received))/len(key))
+    
+    
+    
+    
+    
+    if(sum(np.bitwise_xor(key,key_np_received))/len(key)==0): #...............................................checking if channel is good enough for transmission by checking BER..................................
         gc=True #considering the client model for averaging
         for epoch in range(1, args.epochs + 1):
             
@@ -161,7 +206,7 @@ def ClientUpdate(args, device, client):
                 target = target.send(client['hook'])
                 
                 #train model on client
-                data, target = data.to(device), target.to(device) #send data to cpu/gpu
+                data, target = data.to(device), target.to(device) #send data to cpu/gpu (data is stored locally)
                 output = client['model'](data)
                 loss = F.nll_loss(output, target)
                 loss.backward()
@@ -238,7 +283,7 @@ for fed_round in range(args.rounds):
     # Training 
     #even slot
     for client in active_clients:
-        goodchannel=ClientUpdate(args, device, client)
+        goodchannel=ClientUpdate(args, device, client,key_np,key)
         if(goodchannel):
             client_good_channel.append(client)
     
@@ -263,6 +308,8 @@ for fed_round in range(args.rounds):
     # Share the global model with the clients
     for client in clients:
         client['model'].load_state_dict(global_model.state_dict())
+        #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
+        #print(client['model'].conv1.weight.data)
         
 if (args.save_model):
     torch.save(global_model.state_dict(), "FedAvg.pt")

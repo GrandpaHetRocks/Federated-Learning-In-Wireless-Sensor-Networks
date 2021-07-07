@@ -114,11 +114,11 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
     
-def ClientUpdate(args, device, client,key_np,key):
+def ClientUpdate(args, device, client,key_np,key,power):
     gc=False
     client['model'].train()
     #simulating a wireless channel
-    snr=random.randint(39,40)   #tamper here to make the channel good/bad :P
+    snr=random.randint(0,40)   #tamper here to make the channel good/bad :P
     #snr=40
     print("SNR= ",snr)
     snr__=10**(snr/10)
@@ -130,7 +130,8 @@ def ClientUpdate(args, device, client,key_np,key):
     
     data=client['model'].conv1.weight
     data=data*math.sqrt(P) #transmitted signal
-    #print(torch.norm(abs(data*data)))
+    power+=torch.norm(abs(data*data)).item()
+    #print(power)
     data=h*data+(torch.randn(data.size())*std) #channel affecting data
     data=data/(math.sqrt(P)*(h))  #demodulating received data
     data=data.real #demodulating received data
@@ -226,9 +227,9 @@ def ClientUpdate(args, device, client,key_np,key):
                     
     client['model'].get()
     print()
-    return gc
+    return gc,power
 
-def CLientReturn(clients,key,key_np):
+def CLientReturn(clients,key,key_np,power):
     good_ch=[]
     for client in clients:
         #client['model'].train()
@@ -247,6 +248,7 @@ def CLientReturn(clients,key,key_np):
         data=client['model'].conv1.weight
         data=data*math.sqrt(P) #transmitted signal
         #print(torch.norm(abs(data*data)))
+        power+=torch.norm(abs(data*data)).item()
         data=h*data+(torch.randn(data.size())*std) #channel affecting data
         data=data/(math.sqrt(P)*(h))  #demodulating received data
         data=data.real #demodulating received data
@@ -283,7 +285,7 @@ def CLientReturn(clients,key,key_np):
         print()
     
     
-    return(good_ch)
+    return good_ch,power
 
 def test(args, model, device, test_loader, name):
     model.eval()    #no need to train the model while testing
@@ -340,8 +342,9 @@ for fed_round in range(args.rounds):
     
     # Training 
     #even slot
+    power_even=0
     for client in active_clients:
-        goodchannel=ClientUpdate(args, device, client,key_np,key)
+        goodchannel,power_even=ClientUpdate(args, device, client,key_np,key,power_even)
         if(goodchannel):
             client_good_channel.append(client)
     
@@ -365,9 +368,10 @@ for fed_round in range(args.rounds):
     print("Sending data back to Server")
     print() 
         
-    good_channel_odd=CLientReturn(client_good_channel,key,key_np)
+    good_channel_odd,power_odd=CLientReturn(client_good_channel,key,key_np,0)
     
     print()
+    
     print("Clients having a good channel and considered for averaging")
     for no in range (len(good_channel_odd)):
         print(good_channel_odd[no]['hook'].id)
@@ -382,6 +386,9 @@ for fed_round in range(args.rounds):
     # Testing the average model
     #test(args, global_model, device, global_test_loader, 'Global')
     test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
+    
+    print("Total Power =",power_odd+power_even)
+    print()
             
     # Share the global model with the clients
     for client in clients:

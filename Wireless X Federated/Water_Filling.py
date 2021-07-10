@@ -54,7 +54,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 30
-        self.rounds = 2
+        self.rounds = 4
         self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
@@ -67,9 +67,11 @@ class Arguments():
         self.samples = self.split_size / self.images 
         self.use_cuda = False
         self.save_model = True
-        self.snr_low=20
+        self.snr_low=0
         self.snr_high=40
-
+        self.csi_low=0
+        self.csi_high=1
+ 
 args = Arguments()
 
 #checking if gpu is available
@@ -117,12 +119,11 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
     
-def ClientUpdate(args, device, client,key_np,key,power,snr,csi,mu):
+def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     gc=False
     client['model'].train()
     #simulating a wireless channel
     poptim=max((1/mu-1/csi),0)
-    power+=poptim
     #print(mu,csi)
     print("Power Allocated=",poptim)
     print("CSI=",csi)
@@ -224,7 +225,7 @@ def ClientUpdate(args, device, client,key_np,key,power,snr,csi,mu):
                     
     client['model'].get()
     print()
-    return gc,power
+    return gc
 
 def CLientReturn(clients,key,key_np,power):
     good_ch=[]
@@ -343,10 +344,10 @@ for fed_round in range(args.rounds):
     csi=[] #csi of the channel
     for ii in range (args.clients):
         snr.append(random.randint(args.snr_low, args.snr_high))
-        csi.append(random.random())#*random.uniform(0,1000))
+        csi.append(random.uniform(args.csi_low,args.csi_high))
     
     smallmu1=0
-    gsmall1=10000000
+    gsmall1=3.402823466E+38 
     
     #water filling algorithm
     mu=1e-15
@@ -369,11 +370,8 @@ for fed_round in range(args.rounds):
     # poptim=max(1/smallmu1-1/csi1,0)
     # print(poptim)
     index=0
-    
-    
-    power_even=0
     for client in active_clients:
-        goodchannel,power_even=ClientUpdate(args, device, client,key_np,key,power_even,snr[index],csi[index],smallmu1)
+        goodchannel=ClientUpdate(args, device, client,key_np,key,snr[index],csi[index],smallmu1)
         if(goodchannel):
             client_good_channel.append(client)
         index+=1
@@ -431,7 +429,7 @@ for fed_round in range(args.rounds):
     #test(args, global_model, device, global_test_loader, 'Global')
     test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
     
-    print("Power in training Round=",power_even)
+    print("Power in training Round=",sum(po))
     print("Power cap=",P*len(active_clients))
     
     #print("Total Power =",power_odd+power_even)

@@ -52,12 +52,12 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 30
-        self.rounds = 4
+        self.rounds = 3
         self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
-        self.C = 0.9 #fraction of clients used in the round
-        self.drop_rate = 0.1 #fraction of devices in the selected set to be dropped for various reasons
+        self.C = 1 #fraction of clients used in the round
+        self.drop_rate = 0 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
         self.iid = 'iid'
@@ -65,11 +65,11 @@ class Arguments():
         self.samples = self.split_size / self.images 
         self.use_cuda = False
         self.save_model = True
-        self.snr_low=39
+        self.snr_low=0
         self.snr_high=40
         self.csi_low=0
         self.csi_high=1
-        self.cluster_members=12
+        self.cluster_members=15
  
 args = Arguments()
 
@@ -215,62 +215,6 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     print()
     return gc
 
-def CLientReturn(clients,key,key_np,power):
-    good_ch=[]
-    for client in clients:
-        #simulating a wireless channel
-        snr=random.randint(args.snr_low,args.snr_high)   #tamper here to make the channel good/bad :P
-        #snr=40
-        print("SNR= ",snr)
-        print("Client:",client['hook'].id)
-        snr__=10**(snr/10)
-        std=math.sqrt(P/snr__) #channel noise
-        x=random.random()
-        y=random.random()
-        h=complex(x,y)
-        
-        
-        data=client['model'].conv1.weight
-        data=data*math.sqrt(P) #transmitted signal
-        #print(torch.norm(abs(data*data)))
-        power+=torch.norm(abs(data*data)).item()
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
-        data=data/(math.sqrt(P)*(h))  #demodulating received data
-        data=data.real #demodulating received data
-        client['model'].conv1.weight.data=data
-        
-        
-        
-        data=client['model'].conv2.weight
-        data=data*math.sqrt(P) #transmitted signal
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
-        data=data/(math.sqrt(P)*(h))  #demodulating received data
-        data=data.real #demodulating received data
-        client['model'].conv2.weight.data=data
-        
-        key_np_received=h*key_np+(np.random.randn(len(key_np))*std*2)
-        #print(key_np_received)
-        key_np_received=(key_np_received/(h)).real
-        
-        for o in range (len(key_np_received)):  #demodulation bpsk
-            if(key_np_received[o]>=0):
-                key_np_received[o]=0
-            else:
-                key_np_received[o]=1
-        
-        key_np_received=key_np_received.tolist()
-        key_np_received = [int(item) for item in key_np_received]
-        
-        
-        if(sum(np.bitwise_xor(key,key_np_received))/len(key)==0): #...............................................checking if channel is good enough for transmission by checking BER..................................#
-            print("Channel is good")
-            good_ch.append(client) #considering the client model for averaging
-        else:
-            print("Poor Channel")
-        print()
-    
-    
-    return good_ch,power
 
 def test(args, model, device, test_loader, name):
     model.eval()    #no need to train the model while testing
@@ -292,7 +236,6 @@ def test(args, model, device, test_loader, name):
 
    
 torch.manual_seed(args.torch_seed)
-global_model = Net() #redundant code as we don't use it for training: assigns a CNN to the global model
 
 for client in clients: #give the model and optimizer to every client
     torch.manual_seed(args.torch_seed)
@@ -390,12 +333,10 @@ for fed_round in range(args.rounds):
     #training members of individual clusters and considering cluster head as the global server for the time slot
     no=1
     for cluster in arranged_clusters:  
-        head=cluster['Cluster Head']
         members=cluster['Members']
         snrlist=cluster['SNR']
         csilist=cluster['CSI']
-        #global_model=head
-        #print(csilist)
+        head=cluster['Cluster Head']
         snr=[]
         csi=[]
         for i in snrlist:
@@ -410,8 +351,6 @@ for fed_round in range(args.rounds):
         #water filling algorithm
         mu=1e-15
         while(mu<=1):
-            #print("yay")
-            #pn=max(1/mu-1/csi,0)
             g1=0
             pn1=0
             for jj in csi:
@@ -425,138 +364,19 @@ for fed_round in range(args.rounds):
             mu+=0.00002
          
         good_mem=[]
-        #print(smallmu1)
+
         index=0
-        for client in range (len(members)):
-            goodchannel=ClientUpdate(args, device, members[client],key_np,key,snr[index],csi[index],smallmu1)
+        for client in members:
+            goodchannel=ClientUpdate(args, device, client,key_np,key,snr[index],csi[index],smallmu1)
             index+=1
             if(goodchannel):
-                good_mem.append(members[client])
-            members[client]=members[client]
+                good_mem.append(client)
 
 
-        head=global_model
-        head=averageModels(global_model, good_mem)
-        global_model=head
-        cluster['Cluster Head']=head
-        cluster['Members']=members
-        test(args,head, device, global_test_loader, 'Cluster'+str(no))
+        head['model']=averageModels(head['model'], good_mem)
+        test(args,head['model'], device, global_test_loader, 'Cluster'+str(no))
         no+=1
         for client in members:
-            client['model'].load_state_dict(global_model.state_dict())
-            
-        
-    
-    # Training 
-    #even slot
-    
-#     snr=[] #snr of the channel
-#     csi=[] #csi of the channel
-#     for ii in range (args.clients):
-#         snr.append(random.randint(args.snr_low, args.snr_high))
-#         csi.append(random.uniform(args.csi_low,args.csi_high))
-    
-#     smallmu1=0
-#     gsmall1=3.402823466E+38 
-    
-#     #water filling algorithm
-#     mu=1e-15
-#     while(mu<=1):
-#         #print("yay")
-#         #pn=max(1/mu-1/csi,0)
-#         g1=0
-#         pn1=0
-#         for jj in csi:
-#             pn=max(1/mu-1/jj,0)
-#             g1+=math.log(1+pn*jj) #capacity of a channel (shannon's law)
-#             pn1+=pn
-#         g=g1-mu*(pn1-P*len(active_clients))
-#         if(g<gsmall1):
-#             smallmu1=mu
-#             gsmall1=g
-#         mu+=0.00002
-
-#     #print(smallmu1)
-#     # poptim=max(1/smallmu1-1/csi1,0)
-#     # print(poptim)
-#     index=0
-#     for client in active_clients:
-#         goodchannel=ClientUpdate(args, device, client,key_np,key,snr[index],csi[index],smallmu1)
-#         if(goodchannel):
-#             client_good_channel.append(client)
-#         index+=1
-        
-#     po=[]    
-#     for jj in csi:
-#         po.append(max(1/smallmu1-1/jj,0))
-    
-#     plt.bar([str(i) for i in range (1,len(po)+1)],po,)
-#     csi.sort()
-#     po=[]
-#     for jj in csi:
-#         po.append(max(1/smallmu1-1/jj,0))
-#     fig,ax=plt.subplots()
-#     line1=ax.plot(csi,po,label="channel power allocated")
-#     line2=ax.plot(csi,[1/smallmu1]*len(csi),label="maximum power allocated")
-#     ax.set_title("csi vs power allocated")
-#     ax.set_xlabel("csi (channel gain to noise ratio)")
-#     ax.set_ylabel("power allocated")
-#     ax.legend()
-#     plt.show()
-    
-
-# #     # Testing 
-# #     for client in active_clients:
-# #         test(args, client['model'], device, client['testset'], client['hook'].id)
-    
-    
-    
-#     print()
-#     print("Clients having a good channel and considered for training")
-#     for no in range (len(client_good_channel)):
-#         print(client_good_channel[no]['hook'].id)
-        
-        
-        
-#     # Averaging 
-#         #odd slot
-    
-#     # print()
-#     # print("Sending data back to Server")
-#     # print() 
-        
-#     # good_channel_odd,power_odd=CLientReturn(client_good_channel,key,key_np,0)
-    
-#     # print()
-    
-#     # print("Clients having a good channel and considered for averaging")
-#     # for no in range (len(good_channel_odd)):
-#     #     print(good_channel_odd[no]['hook'].id)
-    
-        
-#     #global_model = averageModels(global_model,good_channel_odd)
-#     #test(args, global_model, device, global_test_loader, 'Global Noise 2 way')
-#     global_model1 = averageModels(global_model,client_good_channel)
-#     #global_model = averageModels(global_model, active_clients)
-#     #print(active_clients==client_good_channel)
-    
-#     # Testing the average model
-#     #test(args, global_model, device, global_test_loader, 'Global')
-#     test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
-    
-#     print("Power in training Round=",sum(po))
-#     print("Power cap=",P*len(active_clients))
-    
-#     #print("Total Power =",power_odd+power_even)
-#     print()
-            
-#     # Share the global model with the clients
-#     for client in clients:
-#         client['model'].load_state_dict(global_model.state_dict())
-#         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
-#         #print(client['model'].conv1.weight.data)
-    
-    
-        
-# if (args.save_model):
-#     torch.save(global_model.state_dict(), "FedAvg.pt")
+            client['model'].load_state_dict(head['model'].state_dict())
+        cluster['Members']=members
+        cluster['Cluster Head']['model'].load_state_dict(head['model'].state_dict())

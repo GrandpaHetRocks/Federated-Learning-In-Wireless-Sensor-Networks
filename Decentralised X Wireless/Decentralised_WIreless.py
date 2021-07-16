@@ -63,9 +63,9 @@ class Arguments():
         self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
-        self.use_cuda = False
+        self.use_cuda = True
         self.save_model = True
-        self.snr_low=0
+        self.snr_low=20
         self.snr_high=40
         self.csi_low=0
         self.csi_high=1
@@ -75,7 +75,7 @@ args = Arguments()
 
 #checking if gpu is available
 use_cuda = args.use_cuda and torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cuda:0" if use_cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
 hook = sy.TorchHook(torch)
@@ -151,9 +151,13 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     
     if(poptim!=0):
         data=client['model'].conv1.weight
+        #data=data.cuda()
         data=data*math.sqrt(poptim) #transmitted signal
         #print(power)
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv1.weight.data=data
@@ -161,8 +165,12 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         
         
         data=client['model'].conv2.weight
+        #data=data.cuda()
         data=data*math.sqrt(poptim) #transmitted signal
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv2.weight.data=data
@@ -216,13 +224,17 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     return gc
 
 
-def test(args, model, device, test_loader, name):
+def test(args, model, device, test_loader, name,fed_round):
     model.eval()    #no need to train the model while testing
     test_loss = 0
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
+            if(use_cuda and fed_round==0):
+                data,target=data.cuda(),target.cuda()
+                model.cuda()
+            else:
+                data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += F.nll_loss(output, target, reduction='sum').item() # sum up batch loss
             pred = output.argmax(1, keepdim=True) # get the index of the max log-probability 
@@ -374,7 +386,7 @@ for fed_round in range(args.rounds):
 
 
         head['model']=averageModels(head['model'], good_mem)
-        test(args,head['model'], device, global_test_loader, 'Cluster'+str(no))
+        test(args,head['model'], device, global_test_loader, 'Cluster'+str(no),fed_round)
         no+=1
         for client in members:
             client['model'].load_state_dict(head['model'].state_dict())

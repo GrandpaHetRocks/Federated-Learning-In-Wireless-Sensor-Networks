@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jul  7 22:40:34 2021
-
 @author: Ayush
 """
 
@@ -64,7 +63,7 @@ class Arguments():
         self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
-        self.use_cuda = False
+        self.use_cuda = True
         self.save_model = True
 
 args = Arguments()
@@ -132,7 +131,10 @@ def ClientUpdate(args, device, client,key_np,key,power):
     data=data*math.sqrt(P) #transmitted signal
     power+=torch.norm(abs(data*data)).item()
     #print(power)
-    data=h*data+(torch.randn(data.size())*std) #channel affecting data
+    if(use_cuda):
+        data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+    else:
+        data=h*data+(torch.randn(data.size())*std)
     data=data/(math.sqrt(P)*(h))  #demodulating received data
     data=data.real #demodulating received data
     client['model'].conv1.weight.data=data
@@ -141,7 +143,10 @@ def ClientUpdate(args, device, client,key_np,key,power):
     
     data=client['model'].conv2.weight
     data=data*math.sqrt(P) #transmitted signal
-    data=h*data+(torch.randn(data.size())*std) #channel affecting data
+    if(use_cuda):
+        data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+    else:
+        data=h*data+(torch.randn(data.size())*std)
     data=data/(math.sqrt(P)*(h))  #demodulating received data
     data=data.real #demodulating received data
     client['model'].conv2.weight.data=data
@@ -249,7 +254,10 @@ def CLientReturn(clients,key,key_np,power):
         data=data*math.sqrt(P) #transmitted signal
         #print(torch.norm(abs(data*data)))
         power+=torch.norm(abs(data*data)).item()
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
         data=data/(math.sqrt(P)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv1.weight.data=data
@@ -258,7 +266,10 @@ def CLientReturn(clients,key,key_np,power):
         
         data=client['model'].conv2.weight
         data=data*math.sqrt(P) #transmitted signal
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
         data=data/(math.sqrt(P)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv2.weight.data=data
@@ -293,7 +304,11 @@ def test(args, model, device, test_loader, name):
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
+            if(use_cuda):
+                data,target=data.cuda(),target.cuda()
+                model.cuda()
+            else:
+                data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += F.nll_loss(output, target, reduction='sum').item() # sum up batch loss
             pred = output.argmax(1, keepdim=True) # get the index of the max log-probability 

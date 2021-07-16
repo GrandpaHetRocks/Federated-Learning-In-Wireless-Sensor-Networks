@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jun 28 20:32:14 2021
-
 @author: Ayush
 """
 
@@ -146,6 +145,7 @@ def ClientUpdate(args, device, client,key_np,key):
     #print(client['model'].conv1.weight.size)
     client['model'].send(client['hook'])
     print("Client:",client['hook'].id)
+    print("CSI",abs(h)/(std*std))
     
     key_np_received=h*key_np+(np.random.randn(len(key_np))*std*2)
     #print(key_np_received)
@@ -313,4 +313,3 @@ for fed_round in range(args.rounds):
         
 if (args.save_model):
     torch.save(global_model.state_dict(), "FedAvg.pt")
-    

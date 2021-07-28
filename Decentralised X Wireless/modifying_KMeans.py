@@ -1,10 +1,3 @@
-
-#To Do: Right now kmeans works only on basis of distance from centroid. now i gotta assign channel
-#snrs between every client and on every cluster assignment compare client's channel with every cluster's
-#cluster head (distance+snr both)
-
-
-
 # k-means clustering
 from numpy import unique
 from numpy import where
@@ -16,7 +9,7 @@ import math
 import numpy as np
 import random
 # define dataset
-cluster_array, _ = make_classification(n_samples=30, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=1)
+cluster_array, _ = make_classification(n_samples=30, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=2)
 
 no=1
 clients={}
@@ -46,8 +39,9 @@ def assign_clusters(centroids, cluster_array,clients,snr_list):
         distances = []
         for centroid in centroids:
             distances.append(calc_distance(centroid,cluster_array[i]))
+        #print(distances)
         cluster = [z for z, val in enumerate(distances) if val==min(distances)]
-        clusters.append(cluster[0])
+        #clusters.append(cluster[0])
         if(min(distances)<=mindis1 and cluster[0]==0):
             cluster_head1=get_key(cluster_array[i],clients)
             mindis1=min(distances)
@@ -62,11 +56,11 @@ def assign_clusters(centroids, cluster_array,clients,snr_list):
                 snr2=m[2]
                 break
         #print(snr1,snr2)
-        if(snr1>=snr2):
-            clusters.pop()
+        if(snr1-distances[0]>=snr2-distances[1]):
+            #clusters.pop()
             clusters.append(0)
         else:
-            clusters.pop()
+            #clusters.pop()
             clusters.append(1)
             #print(snr1,snr2)
         
@@ -93,7 +87,7 @@ def snr_calc(clients):
             X1=clients['client'+str(i+1)]
             X2=clients['client'+str(j+1)]
             dis=calc_distance(X1,X2)
-            snr=60*math.exp(-dis)+random.uniform(-10,10)
+            snr=60*math.exp(-dis)+random.uniform(-5,5)
             snr_list.append(['client'+str(i+1),'client'+str(j+1),snr])
     return(snr_list)
 

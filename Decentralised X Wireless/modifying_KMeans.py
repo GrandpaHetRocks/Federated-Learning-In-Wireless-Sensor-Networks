@@ -139,7 +139,7 @@ path_loss1.sort(reverse=True)
 fig,ax=pyplot.subplots()
 ax.plot(dis,path_loss1)
 ax.set_xlabel('distance between nodes')
-ax.set_ylabel('Path Loss')
+ax.set_ylabel('Signal Power')
 pyplot.show()
 
 

@@ -26,15 +26,15 @@ def calc_distance(X1, X2):
     return (sum((X1 - X2)**2))**0.5
 
 # Assign cluster clusters based on closest centroid
-def assign_clusters(centroids, cluster_array,clients,snr_list):
+def assign_clusters(centroids, cluster_array,clients,path_loss_list):
     clusters = []
     cluster_head=[]
     mindis1=10000000
     mindis2=10000000
     cluster_head1=''
     cluster_head2=''
-    snr1=0
-    snr2=0
+    path_loss1=0
+    path_loss2=0
     for i in range(cluster_array.shape[0]):
         distances = []
         for centroid in centroids:
@@ -49,20 +49,20 @@ def assign_clusters(centroids, cluster_array,clients,snr_list):
             cluster_head2=get_key(cluster_array[i],clients)
             mindis2=min(distances)
         #print(60*math.exp(-min(distances))+random.uniform(-10,10))
-        for m in snr_list:
+        for m in path_loss_list:
             if(cluster_head1 in m and get_key(cluster_array[i],clients) in m):
-                snr1=m[2]
+                path_loss1=m[2]
             if(cluster_head2 in m and get_key(cluster_array[i],clients) in m):
-                snr2=m[2]
+                path_loss2=m[2]
                 break
-        #print(snr1,snr2)
-        if(snr1-distances[0]>=snr2-distances[1]):
+        #print(path_loss1,path_loss2)
+        if(distances[0]<=distances[1]):
             #clusters.pop()
             clusters.append(0)
         else:
             #clusters.pop()
             clusters.append(1)
-            #print(snr1,snr2)
+            #print(path_loss1,path_loss2)
         
     
     #print(cluster_head1,cluster_head2)
@@ -80,31 +80,35 @@ def calc_centroids(clusters, cluster_array):
         new_centroids.append(cluster_mean)
     return new_centroids
 
-def snr_calc(clients):
-    snr_list=[]
+def path_loss_calc(clients):
+    path_loss_list=[]
+    dis_list=[]
     for i in range(len(clients)-1):
         for j in range(i+1,len(clients)):
             X1=clients['client'+str(i+1)]
             X2=clients['client'+str(j+1)]
             dis=calc_distance(X1,X2)
-            snr=60*math.exp(-dis)+random.uniform(-5,5)
-            snr_list.append(['client'+str(i+1),'client'+str(j+1),snr])
-    return(snr_list)
+            #path_loss=60*math.exp(-dis)+random.uniform(-5,5)
+            path_loss=10*math.log10(1000/(dis*dis))
+            #print(path_loss)
+            path_loss_list.append(['client'+str(i+1),'client'+str(j+1),path_loss])
+            dis_list.append(dis)
+    return(path_loss_list,dis_list)
 
-snr=snr_calc(clients)
-#print(snr)
+path_loss,dis=path_loss_calc(clients)
+#print(path_loss)
 
 k = 2
 cluster_vars = []
 centroids = [cluster_array[i+2] for i in range(k)]
-clusters,cluster_head1,cluster_head2  = assign_clusters(centroids, cluster_array,clients,snr)
+clusters,cluster_head1,cluster_head2  = assign_clusters(centroids, cluster_array,clients,path_loss)
 initial_clusters = clusters
 
 
 
-for i in range(20):
+for i in range(50):
     centroids = calc_centroids(clusters, cluster_array)
-    clusters,cluster_head1,cluster_head2 = assign_clusters(centroids,cluster_array,clients,snr)
+    clusters,cluster_head1,cluster_head2 = assign_clusters(centroids,cluster_array,clients,path_loss)
 
 
 
@@ -125,6 +129,18 @@ ch2=clients[cluster_head2]
 
 pyplot.scatter(ch1[0],ch1[1],c='green')
 pyplot.scatter(ch2[0],ch2[1],c='green')
+#pyplot.show()
+
+path_loss1=[]
+dis.sort()
+for i in path_loss:
+    path_loss1.append(i[2])
+path_loss1.sort(reverse=True)
+fig,ax=pyplot.subplots()
+ax.plot(dis,path_loss1)
+ax.set_xlabel('distance between nodes')
+ax.set_ylabel('Path Loss')
 pyplot.show()
+
 
 

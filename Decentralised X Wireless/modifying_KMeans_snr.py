@@ -11,8 +11,8 @@ import numpy as np
 import random
 # define dataset
 
-random.seed(5)
-cluster_array, _ = make_classification(n_samples=30, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=2)
+#random.seed(15)
+cluster_array, _ = make_classification(n_samples=30, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)
 #print(cluster_array)
 
 no=1
@@ -69,8 +69,8 @@ def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
                 path_loss2=path_loss_list[m][2]
                 noise2=noise_list[m][2]
                 break
-        snr1=0.6*path_loss1-0.4*noise1
-        snr2=0.6*path_loss2-0.4*noise2
+        snr1=path_loss1-noise1
+        snr2=path_loss2-noise2
         #print(snr1,snr2)
         #print(path_loss1,path_loss2)
         if(snr1>=snr2):#distances[0]<=distances[1]):
@@ -117,7 +117,7 @@ def path_loss_calc(clients):
             X2=clients['client'+str(j+1)]
             dis=calc_distance(X1,X2)
             #path_loss=60*math.exp(-dis)+random.uniform(-5,5)
-            path_loss=10*math.log10(1000000/(dis*dis))
+            path_loss=10*math.log10(10000/(dis*dis))
             #print(path_loss)
             path_loss_list.append(['client'+str(i+1),'client'+str(j+1),path_loss])
             dis_list.append(dis)
@@ -127,7 +127,7 @@ def noise(clients):
     noise_list=[]
     for i in range(len(clients)-1):
         for j in range(i+1,len(clients)):
-            noise=random.uniform(0,10)
+            noise=random.uniform(0,5)
             noise_list.append(['client'+str(i+1),'client'+str(j+1),noise])
     return(noise_list)
 
@@ -147,7 +147,7 @@ initial_clusters = clusters
 #print(centroids)
 
 
-for i in range(50):
+for i in range(20):
     centroids = calc_centroids(clusters, cluster_array)
     clusters,cluster_head1,cluster_head2,snr_list=assign_clusters(centroids,cluster_array,clients,path_loss,noise_list)
 

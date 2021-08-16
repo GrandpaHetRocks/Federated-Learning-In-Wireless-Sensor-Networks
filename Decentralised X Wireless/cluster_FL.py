@@ -57,8 +57,6 @@ class Arguments():
         self.samples = self.split_size / self.images 
         self.use_cuda = True
         self.save_model = True
-        self.snr_low=20
-        self.snr_high=40
         self.csi_low=0
         self.csi_high=1
         self.cluster_members=15
@@ -100,6 +98,7 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, 500)
         self.fc2 = nn.Linear(500, 10)
+
 
     def forward(self, x):
         #x=self.quant(x)

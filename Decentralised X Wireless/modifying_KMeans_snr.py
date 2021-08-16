@@ -28,7 +28,7 @@ def get_key(val,my_dict):
              return key
 
 def calc_distance(X1, X2):
-    return (sum((X1 - X2)**2))**0.5
+    return ((sum((X1 - X2)**2))**0.5)*5  #increasing spread here
 
 # Assign cluster clusters based on closest centroid
 def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
@@ -89,6 +89,8 @@ def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
                 noise1=noise_list[m][2]
                 snr1=0.6*path_loss1-0.4*noise1
                 break
+    
+    #print(snr1,snr2)
         
     snr_list.append([cluster_head1,cluster_head2,snr1])
         
@@ -121,6 +123,11 @@ def path_loss_calc(clients):
             #print(path_loss)
             path_loss_list.append(['client'+str(i+1),'client'+str(j+1),path_loss])
             dis_list.append(dis)
+    # pl=[]
+    # for ki in path_loss_list:
+    #     pl.append(ki[2])
+    # pl.sort()
+    # print(pl)
     return(path_loss_list,dis_list)
 
 def noise(clients):
@@ -283,5 +290,5 @@ def cluster_former():
     
     return(arranged_clusters)
 
-#cluster()
+#cluster_former()
 

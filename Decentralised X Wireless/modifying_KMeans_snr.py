@@ -270,7 +270,7 @@ def get_clusters():
     return(arranged_clusters)
 
 
-def cluster():
+def cluster_former():
     arranged_clusters=get_clusters()
     clus1=arranged_clusters[0]['Members']
     clus2=arranged_clusters[1]['Members']

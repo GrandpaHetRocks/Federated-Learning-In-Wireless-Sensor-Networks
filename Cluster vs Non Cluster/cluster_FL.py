@@ -59,7 +59,6 @@ class Arguments():
         self.save_model = True
         self.csi_low=0
         self.csi_high=1
-        self.cluster_members=15
 
 args = Arguments()
 
@@ -96,8 +95,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 50)
-        self.fc2 = nn.Linear(50, 10)
+        self.fc1 = nn.Linear(4*4*10, 100)
+        self.fc2 = nn.Linear(100, 10)
 
     def forward(self, x):
         #x=self.quant(x)
@@ -238,6 +237,8 @@ def test(args, model, device, test_loader, name,fed_round):
     print('\nTest set: Average loss for {} model: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         name, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+    
+    return(100. * correct / len(test_loader.dataset))
 
    
 torch.manual_seed(args.torch_seed)
@@ -251,7 +252,8 @@ for client in clients: #give the model and optimizer to every client
     #dtype=torch.fp)  # the target dtype for quantized weights
     client['optim'] = optim.SGD(client['model'].parameters(), lr=args.lr)
     
-
+acc1=[]
+acc2=[]
 
 for fed_round in range(args.rounds):
     arranged_clusters=cluster_former()
@@ -341,9 +343,18 @@ for fed_round in range(args.rounds):
 
 
         head['model']=averageModels(head['model'], good_mem)
-        test(args,head['model'], device, global_test_loader, 'Cluster'+str(no),fed_round)
+        ac=test(args,head['model'], device, global_test_loader, 'Cluster'+str(no),fed_round)
         no+=1
         for client in members:
             client['model'].load_state_dict(head['model'].state_dict())
         cluster['Members']=members
         cluster['Cluster Head']['model'].load_state_dict(head['model'].state_dict())
+        
+        if(cluster==arranged_clusters[0]):
+            acc1.append(ac)
+        elif(cluster==arranged_clusters[1]):
+            acc2.append(ac)
+
+plt.plot([i for i in range(args.rounds)],acc1)
+plt.plot([i for i in range(args.rounds)],acc2)
+plt.show()

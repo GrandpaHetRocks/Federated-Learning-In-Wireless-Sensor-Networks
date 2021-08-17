@@ -102,8 +102,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 50)
-        self.fc2 = nn.Linear(50, 10)
+        self.fc1 = nn.Linear(4*4*10, 100)
+        self.fc2 = nn.Linear(100, 10)
 
     def forward(self, x):
         #x=self.quant(x)
@@ -237,6 +237,8 @@ def test(args, model, device, test_loader, name):
     print('\nTest set: Average loss for {} model: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         name, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+    
+    return(100. * correct / len(test_loader.dataset))
 
    
 torch.manual_seed(args.torch_seed)
@@ -252,7 +254,7 @@ for client in clients: #give the model and optimizer to every client
     client['optim'] = optim.SGD(client['model'].parameters(), lr=args.lr)
     
 
-
+accuracy=[]
 for fed_round in range(args.rounds):
     
     client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
@@ -335,29 +337,12 @@ for fed_round in range(args.rounds):
         
     # Averaging 
         #odd slot
-    
-    # print()
-    # print("Sending data back to Server")
-    # print() 
-        
-    # good_channel_odd,power_odd=CLientReturn(client_good_channel,key,key_np,0)
-    
-    # print()
-    
-    # print("Clients having a good channel and considered for averaging")
-    # for no in range (len(good_channel_odd)):
-    #     print(good_channel_odd[no]['hook'].id)
-    
-        
-    #global_model = averageModels(global_model,good_channel_odd)
-    #test(args, global_model, device, global_test_loader, 'Global Noise 2 way')
+
     global_model1 = averageModels(global_model,client_good_channel)
-    #global_model = averageModels(global_model, active_clients)
-    #print(active_clients==client_good_channel)
-    
     # Testing the average model
     #test(args, global_model, device, global_test_loader, 'Global')
-    test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
+    ac=test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
+    accuracy.append(ac)
     
     print("Power in training Round=",sum(po))
     #print("Power cap=",P*len(active_clients))
@@ -371,7 +356,7 @@ for fed_round in range(args.rounds):
         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
         #print(client['model'].conv1.weight.data)
     
-    
+plt.plot([i for i in range(args.rounds)],accuracy)
         
 if (args.save_model):
     torch.save(global_model.state_dict(), "FedAvg.pt")

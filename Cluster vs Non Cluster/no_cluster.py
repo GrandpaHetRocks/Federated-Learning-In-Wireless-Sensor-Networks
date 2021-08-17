@@ -15,10 +15,11 @@ import pandas as pd
 import math
 import numpy as np
 import random
+from sklearn.datasets import make_blobs
 
 
 def calc_distance(X1, X2):
-    return ((sum((X1 - X2)**2))**0.5) * 3 #increase spread here
+    return ((sum((X1 - X2)**2))**0.5)  #increase spread here
 
 
 def path_loss_calc(clients):
@@ -47,11 +48,13 @@ def noise(clients):
         for j in range(i+1,len(clients)):
             noise=random.uniform(0,5)
             noise_list.append(['client'+str(i+1),'client'+str(j+1),noise])
+            
     return(noise_list)
 
 
-def get_cluster():
-    cluster_array, _ = make_classification(n_samples=15, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)
+def get_cluster(number=15):
+    #cluster_array, _ = make_classification(n_samples=15, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)
+    cluster_array, _ = make_blobs(n_samples=number,n_features=2, centers=2)
     no=1
     clients={}
     for client in cluster_array:
@@ -63,7 +66,7 @@ def get_cluster():
     for i in cluster_array:
         pyplot.scatter(i[0],i[1],c='red')
     
-    ch=random.randint(1,15)
+    ch=random.randint(1,number)
     cluster_head=clients['client'+str(ch)]
     pyplot.scatter(cluster_head[0],cluster_head[1],c='green')
     
@@ -74,7 +77,8 @@ def get_cluster():
     
     snr_list.sort()
     print(snr_list)
+    #print(cluster_head)
     pyplot.show()
-    return(snr_list)   
+    return(snr_list,'client'+str(ch))   
 
 #get_clusters()

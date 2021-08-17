@@ -51,7 +51,7 @@ key_np=np.array(key1)
 class Arguments():
     def __init__(self):
         self.images = 10000
-        self.clients = 15
+        self.clients = 30
         self.rounds = 4
         self.epochs = 5
         self.local_batches = 64
@@ -80,7 +80,7 @@ hook = sy.TorchHook(torch)
 clients = []
 
 #generating virtual clients
-for i in range(args.clients):
+for i in range(int(args.clients/2)):
     clients.append({'hook': sy.VirtualWorker(hook, id="client{}".format(i+1))})
     
 global_train, global_test, train_group, test_group = load_dataset(args.clients, args.iid) #load data
@@ -100,10 +100,10 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         #self.quant = torch.quantization.QuantStub()
-        self.conv1 = nn.Conv2d(1, 20, 5, 1)
-        self.conv2 = nn.Conv2d(20, 50, 5, 1)
-        self.fc1 = nn.Linear(4*4*50, 500)
-        self.fc2 = nn.Linear(500, 10)
+        self.conv1 = nn.Conv2d(1, 5, 5, 1)
+        self.conv2 = nn.Conv2d(5, 10, 5, 1)
+        self.fc1 = nn.Linear(4*4*10, 50)
+        self.fc2 = nn.Linear(50, 10)
 
     def forward(self, x):
         #x=self.quant(x)
@@ -111,7 +111,7 @@ class Net(nn.Module):
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*50)
+        x = x.view(-1, 4*4*10)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
@@ -214,62 +214,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     print()
     return gc
 
-def CLientReturn(clients,key,key_np,power):
-    good_ch=[]
-    for client in clients:
-        #simulating a wireless channel
-        snr=random.randint(args.snr_low,args.snr_high)   #tamper here to make the channel good/bad :P
-        #snr=40
-        print("SNR= ",snr)
-        print("Client:",client['hook'].id)
-        snr__=10**(snr/10)
-        std=math.sqrt(P/snr__) #channel noise
-        x=random.random()
-        y=random.random()
-        h=complex(x,y)
-        
-        
-        data=client['model'].conv1.weight
-        data=data*math.sqrt(P) #transmitted signal
-        #print(torch.norm(abs(data*data)))
-        power+=torch.norm(abs(data*data)).item()
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
-        data=data/(math.sqrt(P)*(h))  #demodulating received data
-        data=data.real #demodulating received data
-        client['model'].conv1.weight.data=data
-        
-        
-        
-        data=client['model'].conv2.weight
-        data=data*math.sqrt(P) #transmitted signal
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
-        data=data/(math.sqrt(P)*(h))  #demodulating received data
-        data=data.real #demodulating received data
-        client['model'].conv2.weight.data=data
-        
-        key_np_received=h*key_np+(np.random.randn(len(key_np))*std*2)
-        #print(key_np_received)
-        key_np_received=(key_np_received/(h)).real
-        
-        for o in range (len(key_np_received)):  #demodulation bpsk
-            if(key_np_received[o]>=0):
-                key_np_received[o]=0
-            else:
-                key_np_received[o]=1
-        
-        key_np_received=key_np_received.tolist()
-        key_np_received = [int(item) for item in key_np_received]
-        
-        
-        if(sum(np.bitwise_xor(key,key_np_received))/len(key)==0): #...............................................checking if channel is good enough for transmission by checking BER..................................#
-            print("Channel is good")
-            good_ch.append(client) #considering the client model for averaging
-        else:
-            print("Poor Channel")
-        print()
-    
-    
-    return good_ch,power
+
 
 def test(args, model, device, test_loader, name):
     model.eval()    #no need to train the model while testing
@@ -311,33 +256,17 @@ for client in clients: #give the model and optimizer to every client
 for fed_round in range(args.rounds):
     
     client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
-    
-#     uncomment if you want a random fraction for C every round
-#     args.C = float(format(np.random.random(), '.1f'))
-    
-    # number of selected clients
-    m = int(max(args.C * args.clients, 1)) #at least 1 client is selected for training
 
-    # Selected devices
-    np.random.seed(fed_round)
-    selected_clients_inds = np.random.choice(range(len(clients)), m, replace=False)#dont choose same client more than once
-    selected_clients = [clients[i] for i in selected_clients_inds]
-    
-    # Active devices
-    np.random.seed(fed_round)
-    active_clients_inds = np.random.choice(selected_clients_inds, int((1-args.drop_rate) * m), replace=False) #drop clients
-    active_clients = [clients[i] for i in active_clients_inds]
-    
     # Training 
     #even slot
     
     snr=[] #snr of the channel
     csi=[] #csi of the channel
-    for ii in range (args.clients):
+    for ii in range (int(args.clients/2)-1):
         #snr.append(random.uniform(args.snr_low, args.snr_high))
         csi.append(random.uniform(args.csi_low,args.csi_high))
     
-    snr=get_cluster()
+    snr,cluster_head=get_cluster()
     smallmu1=0
     gsmall1=3.402823466E+38 
     
@@ -352,7 +281,7 @@ for fed_round in range(args.rounds):
             pn=max(1/mu-1/jj,0)
             g1+=math.log(1+pn*jj) #capacity of a channel (shannon's law)
             pn1+=pn
-        g=g1-mu*(pn1-P*len(active_clients))
+        g=g1-mu*(pn1-P*(int(args.clients/2)-1))
         if(g<gsmall1):
             smallmu1=mu
             gsmall1=g
@@ -362,7 +291,11 @@ for fed_round in range(args.rounds):
     # poptim=max(1/smallmu1-1/csi1,0)
     # print(poptim)
     index=0
-    for client in active_clients:
+    members=[]
+    for i in clients:
+        if(i['hook'].id!=cluster_head):
+            members.append(i)
+    for client in members:
         goodchannel=ClientUpdate(args, device, client,key_np,key,snr[index],csi[index],smallmu1)
         if(goodchannel):
             client_good_channel.append(client)
@@ -427,7 +360,7 @@ for fed_round in range(args.rounds):
     test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
     
     print("Power in training Round=",sum(po))
-    print("Power cap=",P*len(active_clients))
+    #print("Power cap=",P*len(active_clients))
     
     #print("Total Power =",power_odd+power_even)
     print()

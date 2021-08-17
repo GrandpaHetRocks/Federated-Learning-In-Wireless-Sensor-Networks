@@ -9,6 +9,7 @@ import pandas as pd
 import math
 import numpy as np
 import random
+from sklearn.datasets import make_blobs
 # define dataset
 
 #random.seed(15)
@@ -28,7 +29,7 @@ def get_key(val,my_dict):
              return key
 
 def calc_distance(X1, X2):
-    return ((sum((X1 - X2)**2))**0.5)*3  #increasing spread here
+    return ((sum((X1 - X2)**2))**0.5)  #increasing spread here
 
 # Assign cluster clusters based on closest centroid
 def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
@@ -140,6 +141,8 @@ def noise(clients):
 
 def get_clusters():
     cluster_array, _ = make_classification(n_samples=30, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)
+    #cluster_array, _ = make_blobs(n_samples=30,n_features=2, centers=2)
+    #print(cluster_array)
     no=1
     clients={}
     for client in cluster_array:
@@ -288,7 +291,9 @@ def cluster_former():
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']
     
+    #print(arranged_clusters)
     return(arranged_clusters)
+    
 
 #cluster_former()
 

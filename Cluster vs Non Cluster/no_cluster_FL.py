@@ -51,7 +51,7 @@ key_np=np.array(key1)
 class Arguments():
     def __init__(self):
         self.images = 10000
-        self.clients = 30
+        self.clients = 15
         self.rounds = 10
         self.epochs = 5
         self.local_batches = 64
@@ -80,7 +80,7 @@ hook = sy.TorchHook(torch)
 clients = []
 
 #generating virtual clients
-for i in range(int(args.clients/2)):
+for i in range(int(args.clients)):
     clients.append({'hook': sy.VirtualWorker(hook, id="client{}".format(i+1))})
     
 global_train, global_test, train_group, test_group = load_dataset(args.clients, args.iid) #load data
@@ -224,7 +224,7 @@ def test(args, model, device, test_loader, name):
         for data, target in test_loader:
             if(use_cuda):
                 data,target=data.cuda(),target.cuda()
-                model.cuda()
+                #model.cuda()
             else:
                 data, target = data.to(device), target.to(device)
             output = model(data)
@@ -242,7 +242,7 @@ def test(args, model, device, test_loader, name):
 
    
 torch.manual_seed(args.torch_seed)
-global_model = Net() #redundant code as we don't use it for training: assigns a CNN to the global model
+#global_model = Net() #redundant code as we don't use it for training: assigns a CNN to the global model
 
 for client in clients: #give the model and optimizer to every client
     torch.manual_seed(args.torch_seed)
@@ -264,7 +264,7 @@ for fed_round in range(args.rounds):
     
     snr=[] #snr of the channel
     csi=[] #csi of the channel
-    for ii in range (int(args.clients/2)-1):
+    for ii in range (int(args.clients)-1):
         #snr.append(random.uniform(args.snr_low, args.snr_high))
         csi.append(random.uniform(args.csi_low,args.csi_high))
     
@@ -283,7 +283,7 @@ for fed_round in range(args.rounds):
             pn=max(1/mu-1/jj,0)
             g1+=math.log(1+pn*jj) #capacity of a channel (shannon's law)
             pn1+=pn
-        g=g1-mu*(pn1-P*(int(args.clients/2)-1))
+        g=g1-mu*(pn1-P*(int(args.clients)-1))
         if(g<gsmall1):
             smallmu1=mu
             gsmall1=g
@@ -297,6 +297,8 @@ for fed_round in range(args.rounds):
     for i in clients:
         if(i['hook'].id!=cluster_head):
             members.append(i)
+        else:
+            head=i
     for client in members:
         goodchannel=ClientUpdate(args, device, client,key_np,key,snr[index],csi[index],smallmu1)
         if(goodchannel):
@@ -338,10 +340,10 @@ for fed_round in range(args.rounds):
     # Averaging 
         #odd slot
 
-    global_model1 = averageModels(global_model,client_good_channel)
+    head['model'] = averageModels(head['model'],client_good_channel)
     # Testing the average model
     #test(args, global_model, device, global_test_loader, 'Global')
-    ac=test(args, global_model1, device, global_test_loader, 'Global Noise 1 way')
+    ac=test(args, head['model'], device, global_test_loader, 'Final')
     accuracy.append(ac)
     
     print("Power in training Round=",sum(po))
@@ -352,12 +354,11 @@ for fed_round in range(args.rounds):
             
     # Share the global model with the clients
     for client in clients:
-        client['model'].load_state_dict(global_model.state_dict())
+        client['model'].load_state_dict(head['model'].state_dict())
         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
         #print(client['model'].conv1.weight.data)
     fig1,ax1=plt.subplots()
     ax1.plot([i for i in range(len(accuracy))],accuracy)
     plt.show()
         
-if (args.save_model):
-    torch.save(global_model.state_dict(), "FedAvg.pt")
+

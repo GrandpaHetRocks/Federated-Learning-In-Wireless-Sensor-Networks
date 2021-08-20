@@ -224,7 +224,7 @@ def test(args, model, device, test_loader, name,fed_round):
         for data, target in test_loader:
             if(use_cuda and fed_round==0):
                 data,target=data.cuda(),target.cuda()
-                model.cuda()
+                #model.cuda()
             else:
                 data, target = data.to(device), target.to(device)
             output = model(data)

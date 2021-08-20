@@ -257,7 +257,7 @@ acc2=[]
 
 for fed_round in range(args.rounds):
     arranged_clusters=cluster_former()
-    client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
+    
     
 # #     uncomment if you want a random fraction for C every round
 # #     args.C = float(format(np.random.random(), '.1f'))
@@ -302,6 +302,7 @@ for fed_round in range(args.rounds):
     #training members of individual clusters and considering cluster head as the global server for the time slot
     no=1
     for cluster in arranged_clusters:  
+        client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
         members=cluster['Members']
         snrlist=cluster['SNR']
         csilist=cluster['CSI']
@@ -354,7 +355,12 @@ for fed_round in range(args.rounds):
             acc1.append(ac)
         elif(cluster==arranged_clusters[1]):
             acc2.append(ac)
+    
+    fig,ax=plt.subplots()
+    ax.plot([i for i in range(len(acc1))],acc1)
+    plt.show()
+    fig,ax=plt.subplots()
+    ax.plot([i for i in range(len(acc2))],acc2)
+    plt.show()
 
-plt.plot([i for i in range(args.rounds)],acc1)
-plt.plot([i for i in range(args.rounds)],acc2)
 plt.show()

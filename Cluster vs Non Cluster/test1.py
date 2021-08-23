@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug 16 20:13:26 2021
+Created on Mon Sep 20 20:13:26 2021
 
 @author: Ayush
 """
@@ -52,7 +52,7 @@ class Arguments():
         self.drop_rate = 0 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'iid'
+        self.iid = 'noniid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = True
@@ -95,8 +95,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 100)
-        self.fc2 = nn.Linear(100, 10)
+        self.fc1 = nn.Linear(4*4*10, 20)
+        self.fc2 = nn.Linear(20, 10)
 
     def forward(self, x):
         #x=self.quant(x)

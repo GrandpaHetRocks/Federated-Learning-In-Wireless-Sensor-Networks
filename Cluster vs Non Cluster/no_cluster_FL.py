@@ -60,7 +60,7 @@ class Arguments():
         self.drop_rate = 0.1 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'iid'
+        self.iid = 'noniid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = True
@@ -83,7 +83,7 @@ clients = []
 for i in range(int(args.clients)):
     clients.append({'hook': sy.VirtualWorker(hook, id="client{}".format(i+1))})
     
-global_train, global_test, train_group, test_group = load_dataset(args.clients, args.iid) #load data
+global_train, global_test, train_group, test_group = load_dataset(args.clients*2, args.iid) #load data
 
 for inx, client in enumerate(clients):  #return actual image set for each client
     trainset_ind_list = list(train_group[inx]) 
@@ -102,8 +102,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 100)
-        self.fc2 = nn.Linear(100, 10)
+        self.fc1 = nn.Linear(4*4*10, 20)
+        self.fc2 = nn.Linear(20, 10)
 
     def forward(self, x):
         #x=self.quant(x)

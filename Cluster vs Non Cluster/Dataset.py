@@ -26,8 +26,9 @@ def mnistIID(dataset,num_users):#this function randomly chooses 60k/10 (assuming
 def mnistnonIID(dataset,num_users,test):#function divides dataset into classes and each client gets random 2 classes to train on
     # classes,images=20,500
     if test:
-        classes=20
+        classes=100
         images=int(len(dataset)/classes)
+        #print(len(dataset))
     classes_indx=[i for i in range(classes)]
     users_dict={i:np.array([]) for i in range(num_users)}
     indices=np.arange(classes*images)
@@ -39,7 +40,8 @@ def mnistnonIID(dataset,num_users,test):#function divides dataset into classes a
 
     for i in range(num_users):
         np.random.seed(i)
-        temp=set(np.random.choice(classes_indx,2,replace=False)) #random 2 classes to each client
+        #print(classes_indx)
+        temp=set(np.random.choice(classes_indx,3,replace=False)) #random 2 classes to each client
         classes_indx=list(set(classes_indx)-temp)
         for t in temp:
             users_dict[i]=np.concatenate((users_dict[i],indices[t*images:(t+1)*images]),axis=0)

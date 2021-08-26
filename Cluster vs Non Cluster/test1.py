@@ -55,7 +55,7 @@ class Arguments():
         self.iid = 'noniid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
-        self.use_cuda = True
+        self.use_cuda = False
         self.save_model = True
         self.csi_low=0
         self.csi_high=1

@@ -71,7 +71,7 @@ class Arguments():
 args = Arguments()
 
 #checking if gpu is available
-use_cuda = args.use_cuda and torch.cuda.is_available()
+use_cuda = False
 #print(use_cuda)
 device = torch.device("cuda:0" if use_cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}

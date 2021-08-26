@@ -44,7 +44,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 30
-        self.rounds = 35
+        self.rounds = 60
         self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
@@ -375,4 +375,4 @@ for fed_round in range(args.rounds):
     ax.plot([i for i in range(len(acf))],acf)
     plt.show()
 plt.show()
-plt.savefig('result.png')
+plt.savefig('result_cluster.png')

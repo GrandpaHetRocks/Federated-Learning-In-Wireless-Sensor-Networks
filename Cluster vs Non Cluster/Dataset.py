@@ -41,7 +41,7 @@ def mnistnonIID(dataset,num_users,test):#function divides dataset into classes a
     for i in range(num_users):
         np.random.seed(i)
         #print(classes_indx)
-        temp=set(np.random.choice(classes_indx,3,replace=False)) #random 2 classes to each client
+        temp=set(np.random.choice(classes_indx,3,replace=False)) #random 3 classes to each client
         classes_indx=list(set(classes_indx)-temp)
         for t in temp:
             users_dict[i]=np.concatenate((users_dict[i],indices[t*images:(t+1)*images]),axis=0)
@@ -112,8 +112,8 @@ def mnistnonIIDUnequal(dataset,num_users,test):#calsses are there but each clien
 
 def load_dataset(num_users,iidtype):#this function helps load the datasets we made using mnistIID
     transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,),(0.3081,))])
-    trainset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
-    testset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
+    trainset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=True)
+    testset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=True)
     train_group=None
     test_group=None
     if iidtype=='iid':

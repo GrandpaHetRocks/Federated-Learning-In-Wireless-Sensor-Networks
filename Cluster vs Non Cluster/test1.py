@@ -256,6 +256,7 @@ for client in clients: #give the model and optimizer to every client
 acc1=[]
 acc2=[]
 acf=[]
+rc=1
 for fed_round in range(args.rounds):
     arranged_clusters=cluster_former()
     
@@ -367,6 +368,8 @@ for fed_round in range(args.rounds):
         for client in clients:
             client['model'].load_state_dict(head['model'].state_dict())
     acf.append(test(args,head['model'], device, global_test_loader, "Final",fed_round))
+    print(rc)
+    rc+=1
     
     fig,ax=plt.subplots()
     ax.plot([i for i in range(len(acf))],acf)

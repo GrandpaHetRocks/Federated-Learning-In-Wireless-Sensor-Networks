@@ -53,7 +53,7 @@ class Arguments():
         self.images = 10000
         self.clients = 15
         self.rounds = 35
-        self.epochs = 5
+        self.epochs = 3
         self.local_batches = 64
         self.lr = 0.01
         self.C = 0.9 #fraction of clients used in the round

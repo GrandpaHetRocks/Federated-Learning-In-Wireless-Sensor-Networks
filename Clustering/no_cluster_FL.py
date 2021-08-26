@@ -363,5 +363,7 @@ for fed_round in range(args.rounds):
     plt.show()
     print(rc)
     rc+=1
+
+plt.savefig('result_not_cluster.png')
         
 

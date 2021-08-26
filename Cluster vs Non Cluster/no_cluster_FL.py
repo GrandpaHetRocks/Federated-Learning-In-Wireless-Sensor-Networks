@@ -52,7 +52,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 15
-        self.rounds = 10
+        self.rounds = 35
         self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
@@ -63,7 +63,7 @@ class Arguments():
         self.iid = 'noniid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
-        self.use_cuda = True
+        self.use_cuda = False
         self.save_model = True
         self.csi_low=0
         self.csi_high=1

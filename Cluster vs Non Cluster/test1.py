@@ -372,3 +372,4 @@ for fed_round in range(args.rounds):
     ax.plot([i for i in range(len(acf))],acf)
     plt.show()
 plt.show()
+plt.savefig('result.png')

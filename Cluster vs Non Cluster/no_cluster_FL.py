@@ -255,6 +255,7 @@ for client in clients: #give the model and optimizer to every client
     
 
 accuracy=[]
+rc=1
 for fed_round in range(args.rounds):
     
     client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
@@ -360,5 +361,7 @@ for fed_round in range(args.rounds):
     fig1,ax1=plt.subplots()
     ax1.plot([i for i in range(len(accuracy))],accuracy)
     plt.show()
+    print(rc)
+    rc+=1
         
 

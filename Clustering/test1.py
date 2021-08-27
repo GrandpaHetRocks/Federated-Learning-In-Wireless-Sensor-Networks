@@ -110,7 +110,7 @@ class Net(nn.Module):
                    )
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return F.softmax(x, dim=1)
+        return F.log_softmax(x, dim=1)
     
 def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     gc=False

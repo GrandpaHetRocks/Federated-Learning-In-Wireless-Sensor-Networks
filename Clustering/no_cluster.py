@@ -17,7 +17,7 @@ import numpy as np
 import random
 from sklearn.datasets import make_blobs
 
-
+random.seed(15)
 def calc_distance(X1, X2):
     return ((sum((X1 - X2)**2))**0.5)  #increase spread here
 

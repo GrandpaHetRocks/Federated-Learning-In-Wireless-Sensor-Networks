@@ -21,6 +21,7 @@ import math
 import matplotlib.pyplot as plt
 from no_cluster import get_cluster
 
+random.seed(15)
 P=2 #signal power threshold
 #stream = BitStream()
 key=[]
@@ -52,7 +53,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 15
-        self.rounds = 100
+        self.rounds = 300
         self.epochs = 3
         self.local_batches = 64
         self.lr = 0.01
@@ -365,5 +366,5 @@ for fed_round in range(args.rounds):
     rc+=1
 
 plt.savefig('result_not_cluster.png')
-        
+print(accuracy)
 

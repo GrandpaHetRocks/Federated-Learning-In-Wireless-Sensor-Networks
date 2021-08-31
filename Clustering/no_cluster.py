@@ -31,7 +31,7 @@ def path_loss_calc(clients):
             X2=clients['client'+str(j+1)]
             dis=calc_distance(X1,X2)
             #path_loss=60*math.exp(-dis)+random.uniform(-5,5)
-            path_loss=10*math.log10(10000/(dis*dis))
+            path_loss=10*math.log10(1000/(dis*dis))
             #print(path_loss)
             path_loss_list.append(['client'+str(i+1),'client'+str(j+1),path_loss])
             dis_list.append(dis)

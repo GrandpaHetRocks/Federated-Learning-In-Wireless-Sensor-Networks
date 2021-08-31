@@ -84,7 +84,7 @@ clients = []
 for i in range(int(args.clients)):
     clients.append({'hook': sy.VirtualWorker(hook, id="client{}".format(i+1))})
     
-global_train, global_test, train_group, test_group = load_dataset(args.clients*2, args.iid) #load data
+global_train, global_test, train_group, test_group = load_dataset(args.clients, args.iid) #load data
 
 for inx, client in enumerate(clients):  #return actual image set for each client
     trainset_ind_list = list(train_group[inx]) 

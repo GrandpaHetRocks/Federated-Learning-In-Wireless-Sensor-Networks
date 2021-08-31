@@ -53,7 +53,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 30
-        self.rounds = 100
+        self.rounds = 200
         self.epochs = 3
         self.local_batches = 64
         self.lr = 0.01

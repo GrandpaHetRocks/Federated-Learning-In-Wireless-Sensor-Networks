@@ -411,8 +411,10 @@ for fed_round in range(args.rounds):
             
     # Share the global model with the clients
     index=0
-    for client in clients:
+    for client in members:
         client['model'].load_state_dict(head['model'].state_dict())
+        print(index)
+        print(len(snr))
         client=CLientReturn(client,snr[index],csi[index],smallmu1)
         index+=1
         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)

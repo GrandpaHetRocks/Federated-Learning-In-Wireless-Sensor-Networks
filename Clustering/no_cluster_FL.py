@@ -411,7 +411,7 @@ for fed_round in range(args.rounds):
             
     # Share the global model with the clients
     index=0
-    for client in members:
+    for client in clients:
         client['model'].load_state_dict(head['model'].state_dict())
         client=CLientReturn(client,snr[index],csi[index],smallmu1)
         index+=1

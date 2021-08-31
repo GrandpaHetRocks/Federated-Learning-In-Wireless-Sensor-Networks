@@ -52,7 +52,7 @@ key_np=np.array(key1)
 class Arguments():
     def __init__(self):
         self.images = 10000
-        self.clients = 15
+        self.clients = 30
         self.rounds = 100
         self.epochs = 3
         self.local_batches = 64
@@ -241,6 +241,61 @@ def test(args, model, device, test_loader, name):
     
     return(100. * correct / len(test_loader.dataset))
 
+def CLientReturn(client,snr,csi,mu):
+    poptim=max((1/mu-1/csi),0)
+    #print(mu,csi)
+    print("Power Allocated=",poptim)
+    print("CSI=",csi)
+    
+    snr__=10**(snr/10)
+    
+    absh=csi*poptim/snr__
+    x=random.uniform(0,absh)
+    #print(x)
+    y=math.sqrt(absh*absh-x*x)
+    #x=x*100
+    #y=y*100
+    #x=random.random()
+    #y=random.random()
+    #snr=10*math.log(poptim/(std*std),10)
+    std=math.sqrt(poptim/snr__*absh*absh) #channel noise
+    
+    #print(x,y)
+    h=complex(x,y)
+    #std=math.sqrt(abs(h)/csi)
+    #snr=poptim/(std*std)
+    #print(std)
+    print("SNR=",snr)
+    #print("csi",abs(h)/(std*std))
+    
+    
+    if(poptim!=0):
+        data=client['model'].conv1.weight
+        #data=data.cuda()
+        data=data*math.sqrt(poptim) #transmitted signal
+        #print(power)
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
+        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
+        data=data.real #demodulating received data
+        client['model'].conv1.weight.data=data
+        
+        
+        
+        data=client['model'].conv2.weight
+        #data=data.cuda()
+        data=data*math.sqrt(poptim) #transmitted signal
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
+        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
+        data=data.real #demodulating received data
+        client['model'].conv2.weight.data=data
+    return(client)
+
    
 torch.manual_seed(args.torch_seed)
 #global_model = Net() #redundant code as we don't use it for training: assigns a CNN to the global model
@@ -355,8 +410,11 @@ for fed_round in range(args.rounds):
     print()
             
     # Share the global model with the clients
-    for client in clients:
+    index=0
+    for client in members:
         client['model'].load_state_dict(head['model'].state_dict())
+        client=CLientReturn(client,snr[index],csi[index],smallmu1)
+        index+=1
         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
         #print(client['model'].conv1.weight.data)
     fig1,ax1=plt.subplots()

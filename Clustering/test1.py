@@ -54,7 +54,7 @@ class Arguments():
         self.drop_rate = 0 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'noniid'
+        self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = False
@@ -468,5 +468,5 @@ for fed_round in range(args.rounds):
     ax.plot([i for i in range(len(acf))],acf)
     plt.show()
 plt.show()
-plt.savefig('result_cluster.png')
+#plt.savefig('result_cluster.png')
 print(acf)

@@ -442,7 +442,7 @@ for fed_round in range(args.rounds):
         else:
             snrsum2+=k[2]
     
-    print(snrsum1,snrsum2)
+    #print(snrsum1,snrsum2)
 
     weight1=snrsum1/(snrsum1+snrsum2)
     weight2=snrsum2/(snrsum1+snrsum2)

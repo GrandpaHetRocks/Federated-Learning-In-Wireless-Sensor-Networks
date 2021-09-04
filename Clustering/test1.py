@@ -16,6 +16,7 @@ import syft as sy
 import numpy as np
 from Dataset import load_dataset, getImage
 from utils import averageModels
+from utils import averageModelscluster
 import random
 import math
 import matplotlib.pyplot as plt
@@ -314,6 +315,7 @@ acc2=[]
 acf=[]
 rc=1
 for fed_round in range(args.rounds):
+    overall=Net()
     arranged_clusters=cluster_former()
     
     
@@ -410,26 +412,55 @@ for fed_round in range(args.rounds):
         # cluster['Members']=members
         # cluster['Cluster Head']['model'].load_state_dict(head['model'].state_dict())
         
-        if(cluster==arranged_clusters[0]):
-            acc1.append(ac)
-        elif(cluster==arranged_clusters[1]):
-            acc2.append(ac)
+        # if(cluster==arranged_clusters[0]):
+        #     acc1.append(ac)
+        # elif(cluster==arranged_clusters[1]):
+        #     acc2.append(ac)
     
-    if(acc1[-1]>=acc2[-1]):
-        head=arranged_clusters[0]["Cluster Head"]
-        index=0
-        for client in clients:
-            client['model'].load_state_dict(head['model'].state_dict())
-            client=CLientReturn(client,snr[index],csi[index],smallmu1)
-            index+=1
-    else:
-        head=arranged_clusters[1]["Cluster Head"]
-        index=0
-        for client in clients:
-            client['model'].load_state_dict(head['model'].state_dict())
-            client=CLientReturn(client,snr[index],csi[index],smallmu1)
-            index+=1
-    acf.append(test(args,head['model'], device, global_test_loader, "Final",fed_round))
+    # if(acc1[-1]>=acc2[-1]):
+    #     head=arranged_clusters[0]["Cluster Head"]
+    #     index=0
+    #     for client in clients:
+    #         client['model'].load_state_dict(head['model'].state_dict())
+    #         client=CLientReturn(client,snr[index],csi[index],smallmu1)
+    #         index+=1
+    # else:
+    #     head=arranged_clusters[1]["Cluster Head"]
+    #     index=0
+    #     for client in clients:
+    #         client['model'].load_state_dict(head['model'].state_dict())
+    #         client=CLientReturn(client,snr[index],csi[index],smallmu1)
+    #         index+=1
+    # acf.append(test(args,head['model'], device, global_test_loader, "Final",fed_round))
+
+
+    snrsum1=0
+    snrsum2=0
+    for k in snrlist:
+        if(arranged_clusters[0]["Cluster Head"]['hook'].id in k):
+            snrsum1+=k[2]
+        else:
+            snrsum2+=k[2]
+    
+    print(snrsum1,snrsum2)
+
+    weight1=snrsum1/(snrsum1+snrsum2)
+    weight2=snrsum2/(snrsum1+snrsum2)
+    
+    head1=arranged_clusters[0]["Cluster Head"]
+    head2=arranged_clusters[1]["Cluster Head"]
+    
+    overall=averageModelscluster(overall,[head1,head2],[weight1,weight2])
+    acf.append(test(args,head['model'], device, global_test_loader, 'Cluster'+str(no),fed_round))
+    index=0
+    for client in clients:
+        client['model'].load_state_dict(overall.state_dict())
+        client=CLientReturn(client,snr[index],csi[index],smallmu1)
+        index+=1
+
+
+
+
     print(rc)
     rc+=1
     

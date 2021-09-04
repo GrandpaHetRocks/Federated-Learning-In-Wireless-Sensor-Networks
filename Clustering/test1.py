@@ -24,7 +24,7 @@ from modifying_KMeans_snr import cluster_former
 
 P=2 #signal power threshold
 #stream = BitStream()
-random.seed(15)
+#random.seed(10)
 key=[]
 for i in range (10000): #generating a random password to activate training (Pilot signal)
     temp=random.randint(0,1)

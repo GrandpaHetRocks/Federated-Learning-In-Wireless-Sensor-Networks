@@ -26,7 +26,7 @@ def mnistIID(dataset,num_users):#this function randomly chooses 60k/10 (assuming
 def mnistnonIID(dataset,num_users,test):#function divides dataset into classes and each client gets random 3 classes to train on
     # classes,images=20,500
     if test:
-        classes=31
+        classes=33
         images=int(len(dataset)/classes)
         #print(len(dataset))
     classes_indx=[i for i in range(classes)]

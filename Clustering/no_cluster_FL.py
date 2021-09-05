@@ -21,7 +21,7 @@ import math
 import matplotlib.pyplot as plt
 from no_cluster import get_cluster
 
-random.seed(15)
+#random.seed(15)
 P=2 #signal power threshold
 #stream = BitStream()
 key=[]

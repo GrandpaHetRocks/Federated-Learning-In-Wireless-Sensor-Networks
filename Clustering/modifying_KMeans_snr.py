@@ -290,8 +290,8 @@ def cluster_former():
         arranged_clusters=get_clusters()
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']
-        print(len(clus1))
-        print(len(clus2))
+    print(len(clus1))
+    print(len(clus2))
     
     #print(arranged_clusters)
     return(arranged_clusters)

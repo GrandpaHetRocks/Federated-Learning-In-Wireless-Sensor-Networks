@@ -286,7 +286,7 @@ def cluster_former():
     clus2=arranged_clusters[1]['Members']
     
     
-    while(len(clus1)!=15): #or len(clus2)!=15):
+    while(len(clus1)<=7 or len(clus2)<=7):
         arranged_clusters=get_clusters()
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']

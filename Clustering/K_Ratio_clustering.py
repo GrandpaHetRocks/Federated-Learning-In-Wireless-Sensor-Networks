@@ -318,6 +318,9 @@ for fed_round in range(args.rounds):
     overall=Net()
     if(fed_round==0):
         arranged_clusters=cluster_former()
+        temp=arranged_clusters
+    else:
+        arranged_clusters=temp
     
     
     

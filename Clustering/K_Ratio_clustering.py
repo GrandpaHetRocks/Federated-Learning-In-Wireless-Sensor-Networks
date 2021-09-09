@@ -317,7 +317,7 @@ rc=1
 for fed_round in range(args.rounds):
     overall=Net()
     if(args.rounds==0):
-    arranged_clusters=cluster_former()
+        arranged_clusters=cluster_former()
     
     
     

@@ -21,6 +21,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 from modifying_KMeans_snr import cluster_former
+import copy
 
 P=2 #signal power threshold
 #stream = BitStream()
@@ -319,7 +320,7 @@ for fed_round in range(args.rounds):
     overall=Net()
     if(fed_round==0):
         arranged_clusters=cluster_former()
-        temp=arranged_clusters
+        temp=copy.deepcopy(arranged_clusters)
     else:
         #print(temp)
         arranged_clusters=temp

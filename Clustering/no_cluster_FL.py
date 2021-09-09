@@ -326,6 +326,7 @@ for fed_round in range(args.rounds):
         csi.append(random.uniform(args.csi_low,args.csi_high))
     
     snr,cluster_head=get_cluster()
+    print(cluster_head)
     smallmu1=0
     gsmall1=3.402823466E+38 
     

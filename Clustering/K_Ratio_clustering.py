@@ -322,7 +322,7 @@ for fed_round in range(args.rounds):
         arranged_clusters=cluster_former()
         temp=copy.deepcopy(arranged_clusters)
     else:
-        print(temp)
+        #print(temp)
         arranged_clusters=copy.deepcopy(temp)
     
     

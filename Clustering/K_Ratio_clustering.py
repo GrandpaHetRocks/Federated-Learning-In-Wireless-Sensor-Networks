@@ -321,6 +321,7 @@ for fed_round in range(args.rounds):
         arranged_clusters=cluster_former()
         temp=arranged_clusters
     else:
+        print(temp)
         arranged_clusters=temp
     
     

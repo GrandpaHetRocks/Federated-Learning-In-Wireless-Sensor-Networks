@@ -320,7 +320,7 @@ for fed_round in range(args.rounds):
     overall=Net()
     if(fed_round==0):
         arranged_clusters=cluster_former()
-        temp=copy.shallowcopy(arranged_clusters)
+        temp=copy.copy(arranged_clusters)
     else:
         #print(temp)
         arranged_clusters=temp

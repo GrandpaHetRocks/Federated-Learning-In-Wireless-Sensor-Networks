@@ -20,6 +20,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 from no_cluster import get_cluster
+import copy
 
 #random.seed(15)
 P=2 #signal power threshold
@@ -327,6 +328,10 @@ for fed_round in range(args.rounds):
     
     if(fed_round==0):
         snr,cluster_head=get_cluster()
+        temp=copy.deepcopy([snr,cluster_head])
+    else:
+        snr=copy.deepcopy(temp[0])
+        cluster_head=copy.deepcopy(temp[1])
     #print(cluster_head)
     smallmu1=0
     gsmall1=3.402823466E+38 

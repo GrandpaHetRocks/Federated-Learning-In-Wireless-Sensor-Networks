@@ -321,7 +321,7 @@ for fed_round in range(args.rounds):
         arranged_clusters=cluster_former()
         temp=arranged_clusters
     else:
-        print(temp)
+        #print(temp)
         arranged_clusters=temp
     
     
@@ -350,7 +350,7 @@ for fed_round in range(args.rounds):
     new_members2=[]
     
     for ij in members1:
-        #print(ij)
+        print(ij)
         cl_no=int(ij[6:])
         new_members1.append(clients[cl_no-1])
     for ij in members2:

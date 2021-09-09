@@ -314,6 +314,7 @@ acc1=[]
 acc2=[]
 acf=[]
 rc=1
+temp=[]
 for fed_round in range(args.rounds):
     overall=Net()
     if(fed_round==0):

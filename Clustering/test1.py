@@ -44,7 +44,7 @@ key_np=np.array(key1)
 
 class Arguments():
     def __init__(self):
-        self.images = 10000
+        self.images = 60000
         self.clients = 30
         self.rounds = 200
         self.epochs = 3
@@ -73,7 +73,6 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 hook = sy.TorchHook(torch)
 me = hook.local_worker
 clients = []
-
 #generating virtual clients
 for i in range(args.clients):
     clients.append({'hook': sy.VirtualWorker(hook, id="client{}".format(i+1))})

@@ -15,6 +15,7 @@ import numpy as np
 def mnistIID(dataset,num_users):#this function randomly chooses 60k/10 (assuming 10 users) images and distributes them in iid fashion among the users.
     num_images=int(len(dataset)/num_users)
     # print(num_images)
+    print(len(dataset))
     users_dict,indices={},list(range(len(dataset))) #length of dataset is 60k
     for i in range(num_users):
         np.random.seed(i) #starts with the same random number to maiantain similarity across runs

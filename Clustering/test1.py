@@ -44,7 +44,7 @@ key_np=np.array(key1)
 
 class Arguments():
     def __init__(self):
-        self.images = 60000
+        self.images = 10000
         self.clients = 30
         self.rounds = 200
         self.epochs = 3

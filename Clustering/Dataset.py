@@ -15,7 +15,6 @@ import numpy as np
 def mnistIID(dataset,num_users):#this function randomly chooses 60k/10 (assuming 10 users) images and distributes them in iid fashion among the users.
     num_images=int(len(dataset)/num_users)
     # print(num_images)
-    print(len(dataset))
     users_dict,indices={},list(range(len(dataset))) #length of dataset is 60k
     for i in range(num_users):
         np.random.seed(i) #starts with the same random number to maiantain similarity across runs
@@ -113,8 +112,8 @@ def mnistnonIIDUnequal(dataset,num_users,test):#calsses are there but each clien
 
 def load_dataset(num_users,iidtype):#this function helps load the datasets we made using mnistIID
     transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,),(0.3081,))])
-    trainset=torchvision.datasets.FashionMNIST(root="./",train= False,transform=transform,download=True)
-    testset=torchvision.datasets.FashionMNIST(root="./",train= False,transform=transform,download=True)
+    trainset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
+    testset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
     train_group=None
     test_group=None
     if iidtype=='iid':

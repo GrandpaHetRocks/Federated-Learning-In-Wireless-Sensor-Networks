@@ -23,6 +23,7 @@ from no_cluster import get_cluster
 
 P=2 #signal power threshold
 #stream = BitStream()
+random.seed(15)
 key=[]
 for i in range (10000): #generating a random password to activate training (Pilot signal)
     temp=random.randint(0,1)

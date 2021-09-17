@@ -63,7 +63,7 @@ class Arguments():
         self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
-        self.use_cuda = True
+        self.use_cuda = False
         self.save_model = True
         self.csi_low=0
         self.csi_high=1
@@ -151,7 +151,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         data=client['model'].conv1.weight
         data=data*math.sqrt(poptim) #transmitted signal
         #print(power)
-        data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        data=h*data+(torch.randn(data.size())*std)#channel affecting data
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv1.weight.data=data
@@ -160,7 +160,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         
         data=client['model'].conv2.weight
         data=data*math.sqrt(poptim) #transmitted signal
-        data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        data=h*data+(torch.randn(data.size())*std)#channel affecting data
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv2.weight.data=data
@@ -189,7 +189,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         gc=True #considering the client model for training
         for epoch in range(1, args.epochs + 1):
             for batch_idx, (data, target) in enumerate(client['trainset']): 
-                data,target=data.cuda(),target.cuda()
+                # data,target=data.cuda(),target.cuda()
                 data = data.send(client['hook'])
                 target = target.send(client['hook'])
                 

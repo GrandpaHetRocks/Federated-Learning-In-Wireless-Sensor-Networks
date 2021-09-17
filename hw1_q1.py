@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 num_arms = 10
 num_users = 2000
 num_iter = 1000
-epsilon = [0.01]
+epsilon = [0.1]
 np.random.seed(0)
 
 arm_rewards = np.random.normal(size=num_arms)

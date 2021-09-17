@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 num_arms = 10
 num_users = 2000
 num_iter = 1000
-epsilon = [0, 0.01, 0.1, 0.2]
+epsilon = [0.01]
 np.random.seed(0)
 
 arm_rewards = np.random.normal(size=num_arms)
+lol=[]
 
 for ep in epsilon:
     greedy_prob = 1 - ep + (ep/num_arms)
@@ -59,6 +60,7 @@ for ep in epsilon:
         average_reward.append(avg_reward_per_trial)
 
     plt.plot(range(num_iter), average_reward, label='ε = ' + str(ep))
+    print(average_reward)
 
 plt.xlabel('Number of Iterations')
 plt.ylabel('Average Sum Reward')

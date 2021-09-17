@@ -139,8 +139,9 @@ def noise(clients):
             noise_list.append(['client'+str(i+1),'client'+str(j+1),noise])
     return(noise_list)
 
+number=20
 def get_clusters():
-    cluster_array, _ = make_classification(n_samples=20, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=50)#50
+    cluster_array, _ = make_classification(n_samples=number, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=50)#50
     #cluster_array, _ = make_blobs(n_samples=30,n_features=2, centers=2)
     #print(cluster_array)
     no=1
@@ -187,7 +188,7 @@ def get_clusters():
         x=[k[0] for k in cluster_array]
         #print(x)
         y=[k[1] for k in cluster_array]
-        for i in range(30):
+        for i in range(number):
             if(clusters[i]==0):
                 color='blue'
             else:

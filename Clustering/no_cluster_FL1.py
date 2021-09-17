@@ -20,9 +20,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 from no_cluster import get_cluster
-import copy
 
-#random.seed(15)
 P=2 #signal power threshold
 #stream = BitStream()
 key=[]
@@ -54,7 +52,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 30
-        self.rounds = 200
+        self.rounds = 10
         self.epochs = 2
         self.local_batches = 64
         self.lr = 0.01
@@ -65,7 +63,7 @@ class Arguments():
         self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
-        self.use_cuda = False
+        self.use_cuda = True
         self.save_model = True
         self.csi_low=0
         self.csi_high=1
@@ -73,7 +71,7 @@ class Arguments():
 args = Arguments()
 
 #checking if gpu is available
-use_cuda = False
+use_cuda = args.use_cuda and torch.cuda.is_available()
 #print(use_cuda)
 device = torch.device("cuda:0" if use_cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
@@ -153,7 +151,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         data=client['model'].conv1.weight
         data=data*math.sqrt(poptim) #transmitted signal
         #print(power)
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv1.weight.data=data
@@ -162,7 +160,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         
         data=client['model'].conv2.weight
         data=data*math.sqrt(poptim) #transmitted signal
-        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
         client['model'].conv2.weight.data=data
@@ -191,7 +189,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         gc=True #considering the client model for training
         for epoch in range(1, args.epochs + 1):
             for batch_idx, (data, target) in enumerate(client['trainset']): 
-                data,target=data,target
+                data,target=data.cuda(),target.cuda()
                 data = data.send(client['hook'])
                 target = target.send(client['hook'])
                 
@@ -215,32 +213,6 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     client['model'].get()
     print()
     return gc
-
-
-
-def test(args, model, device, test_loader, name):
-    model.eval()    #no need to train the model while testing
-    test_loss = 0
-    correct = 0
-    with torch.no_grad():
-        for data, target in test_loader:
-            if(use_cuda):
-                data,target=data.cuda(),target.cuda()
-                #model.cuda()
-            else:
-                data, target = data.to(device), target.to(device)
-            output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item() # sum up batch loss
-            pred = output.argmax(1, keepdim=True) # get the index of the max log-probability 
-            correct += pred.eq(target.view_as(pred)).sum().item()
-
-    test_loss /= len(test_loader.dataset)
-
-    print('\nTest set: Average loss for {} model: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        name, test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
-    
-    return(100. * correct / len(test_loader.dataset))
 
 def CLientReturn(client,snr,csi,mu):
     poptim=max((1/mu-1/csi),0)
@@ -297,6 +269,32 @@ def CLientReturn(client,snr,csi,mu):
         client['model'].conv2.weight.data=data
     return(client)
 
+
+
+def test(args, model, device, test_loader, name):
+    model.eval()    #no need to train the model while testing
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            if(use_cuda):
+                data,target=data.cuda(),target.cuda()
+                #model.cuda()
+            else:
+                data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += F.nll_loss(output, target, reduction='sum').item() # sum up batch loss
+            pred = output.argmax(1, keepdim=True) # get the index of the max log-probability 
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    test_loss /= len(test_loader.dataset)
+
+    print('\nTest set: Average loss for {} model: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        name, test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+    
+    return(100. * correct / len(test_loader.dataset))
+
    
 torch.manual_seed(args.torch_seed)
 #global_model = Net() #redundant code as we don't use it for training: assigns a CNN to the global model
@@ -312,7 +310,6 @@ for client in clients: #give the model and optimizer to every client
     
 
 accuracy=[]
-rc=1
 for fed_round in range(args.rounds):
     
     client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
@@ -326,9 +323,7 @@ for fed_round in range(args.rounds):
         #snr.append(random.uniform(args.snr_low, args.snr_high))
         csi.append(random.uniform(args.csi_low,args.csi_high))
     
-    
     snr,cluster_head=get_cluster()
-    #print(cluster_head)
     smallmu1=0
     gsmall1=3.402823466E+38 
     
@@ -414,7 +409,7 @@ for fed_round in range(args.rounds):
             
     # Share the global model with the clients
     index=0
-    for client in members:
+    for client in clients:
         client['model'].load_state_dict(head['model'].state_dict())
         client=CLientReturn(client,snr[index],csi[index],smallmu1)
         index+=1
@@ -423,9 +418,6 @@ for fed_round in range(args.rounds):
     fig1,ax1=plt.subplots()
     ax1.plot([i for i in range(len(accuracy))],accuracy)
     plt.show()
-    print(rc)
-    rc+=1
-
-plt.savefig('result_not_cluster.png')
 print(accuracy)
+        
 

@@ -53,7 +53,7 @@ class Arguments():
         self.images = 10000
         self.clients = 30
         self.rounds = 200
-        self.epochs = 2
+        self.epochs = 3
         self.local_batches = 64
         self.lr = 0.01
         self.C = 0.9 #fraction of clients used in the round
@@ -310,6 +310,7 @@ for client in clients: #give the model and optimizer to every client
     
 
 accuracy=[]
+rc=0
 for fed_round in range(args.rounds):
     
     client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
@@ -417,7 +418,9 @@ for fed_round in range(args.rounds):
         #print(client['model'].conv1.weight.data)
     #fig1,ax1=plt.subplots()
     #ax1.plot([i for i in range(len(accuracy))],accuracy)
-    plt.show()
+    #plt.show()
+    print(rc)
+    rc+=1
 print(accuracy)
         
 

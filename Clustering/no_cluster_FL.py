@@ -326,12 +326,8 @@ for fed_round in range(args.rounds):
         #snr.append(random.uniform(args.snr_low, args.snr_high))
         csi.append(random.uniform(args.csi_low,args.csi_high))
     
-    if(True):
-        snr,cluster_head=get_cluster()
-        temp=copy.deepcopy([snr,cluster_head])
-    else:
-        snr=copy.deepcopy(temp[0])
-        cluster_head=copy.deepcopy(temp[1])
+    
+    snr,cluster_head=get_cluster()
     #print(cluster_head)
     smallmu1=0
     gsmall1=3.402823466E+38 

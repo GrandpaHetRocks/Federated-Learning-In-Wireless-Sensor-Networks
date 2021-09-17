@@ -415,8 +415,8 @@ for fed_round in range(args.rounds):
         index+=1
         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
         #print(client['model'].conv1.weight.data)
-    fig1,ax1=plt.subplots()
-    ax1.plot([i for i in range(len(accuracy))],accuracy)
+    #fig1,ax1=plt.subplots()
+    #ax1.plot([i for i in range(len(accuracy))],accuracy)
     plt.show()
 print(accuracy)
         

@@ -313,6 +313,7 @@ acc1=[]
 acc2=[]
 acf=[]
 rc=1
+snrplot=[]
 for fed_round in range(args.rounds):
     overall=Net()
     arranged_clusters=cluster_former()
@@ -445,6 +446,8 @@ for fed_round in range(args.rounds):
 
     weight1=snrsum1/(snrsum1+snrsum2)
     weight2=snrsum2/(snrsum1+snrsum2)
+    snrplot.append((snrsum1+snrsum2)/len(snrlist))
+    
     
     head1=arranged_clusters[0]["Cluster Head"]
     head2=arranged_clusters[1]["Cluster Head"]
@@ -469,3 +472,4 @@ for fed_round in range(args.rounds):
 plt.show()
 #plt.savefig('result_cluster.png')
 print(acf)
+print(snrplot)

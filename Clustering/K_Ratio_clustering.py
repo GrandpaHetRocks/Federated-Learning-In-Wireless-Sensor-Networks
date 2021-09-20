@@ -25,11 +25,8 @@ import copy
 
 P=2 #signal power threshold
 #stream = BitStream()
-<<<<<<< HEAD
+
 random.seed(58)
-=======
-random.seed(42)
->>>>>>> 45517b981c5b133095c6e0076b6783ff4e70b8d5
 key=[]
 for i in range (10000): #generating a random password to activate training (Pilot signal)
     temp=random.randint(0,1)

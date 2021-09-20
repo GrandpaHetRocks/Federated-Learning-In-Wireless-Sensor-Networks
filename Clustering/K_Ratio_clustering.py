@@ -49,7 +49,7 @@ class Arguments():
         self.images = 10000
         self.clients = 30
         self.rounds = 200
-        self.epochs = 2
+        self.epochs = 3
         self.local_batches = 64
         self.lr = 0.01
         self.C = 1 #fraction of clients used in the round
@@ -100,7 +100,7 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 20)
+        self.fc1 = nn.Linear(5, 20) #4*4*10,20
         self.fc2 = nn.Linear(20, 10)
 
     def forward(self, x):
@@ -109,8 +109,8 @@ class Net(nn.Module):
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*10
-                   )
+        x = x.view(-1, 5 
+                   )#4*4*10
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)

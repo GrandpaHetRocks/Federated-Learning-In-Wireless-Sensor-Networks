@@ -55,7 +55,7 @@ class Arguments():
         self.images = 10000
         self.clients = 30
         self.rounds = 200
-        self.epochs = 2
+        self.epochs = 3
         self.local_batches = 64
         self.lr = 0.01
         self.C = 0.9 #fraction of clients used in the round
@@ -104,8 +104,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 20)
-        self.fc2 = nn.Linear(20, 10)
+        self.fc1 = nn.Linear(4*4*10, 5)
+        self.fc2 = nn.Linear(5, 10)
 
     def forward(self, x):
         #x=self.quant(x)

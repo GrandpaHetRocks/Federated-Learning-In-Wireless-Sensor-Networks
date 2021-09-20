@@ -10,7 +10,7 @@ import math
 import numpy as np
 import random
 from sklearn.datasets import make_blobs
-# define dataset
+
 
 random.seed(15)
 #cluster_array, _ = make_classification(n_samples=30, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)

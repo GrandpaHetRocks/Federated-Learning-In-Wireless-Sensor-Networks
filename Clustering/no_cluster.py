@@ -54,7 +54,7 @@ def noise(clients):
 
 def get_cluster(number=30):
     #cluster_array, _ = make_classification(n_samples=number, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)
-    cluster_array, _ = make_blobs(n_samples=number,n_features=2, centers=2,random_state=None)#21
+    cluster_array, _ = make_blobs(n_samples=number,n_features=2, centers=2,random_state=21)#21
     no=1
     clients={}
     for client in cluster_array:

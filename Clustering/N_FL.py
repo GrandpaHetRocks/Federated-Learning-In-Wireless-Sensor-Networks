@@ -329,6 +329,7 @@ for fed_round in range(args.rounds):
     else:
         #print(temp)
         arranged_clusters=copy.deepcopy(temp)
+    print(len(arranged_clusters))
     
     
     
@@ -388,6 +389,7 @@ for fed_round in range(args.rounds):
     no=1
     
     for cluster in arranged_clusters:  
+        print("yay")
         client_good_channel=[] #to check which clients have a good channel, only those will be taken for averaging per round
         members=cluster['Members']
         snrlist=cluster['SNR']

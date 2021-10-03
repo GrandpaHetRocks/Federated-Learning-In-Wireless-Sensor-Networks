@@ -323,7 +323,7 @@ temp=[]
 snrplot=[]
 for fed_round in range(args.rounds):
     overall=Net()
-    if(True): #fed_round==0
+    if(fed_round==0): #fed_round==0
         arranged_clusters=cluster_former()
         temp=copy.deepcopy(arranged_clusters)
     else:

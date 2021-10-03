@@ -28,7 +28,7 @@ def get_key(val,my_dict):
              return key
 
 def calc_distance(X1, X2):
-    return ((sum((X1 - X2)*2))*0.5)  #increasing spread here
+    return ((sum((X1 - X2)**2))**0.5)  #increasing spread here
 
 # Assign cluster clusters based on closest centroid
 def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):

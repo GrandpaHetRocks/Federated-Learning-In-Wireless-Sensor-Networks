@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Oct  3 11:29:50 2021
+
+@author: Ayush
+"""
+
+
 # k-means clustering
 from numpy import unique
 from numpy import where
@@ -37,28 +45,40 @@ def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
     cluster_head=[]
     mindis1=10000000
     mindis2=10000000
+    mindis3=10000000
     cluster_head1=''
     cluster_head2=''
+    cluster_head3=''
     path_loss1=0
     path_loss2=0
+    path_loss3=0
     noise1=0
     noise2=0
+    noise3=0
     snr1=0
     snr2=0
+    snr3=0
     snr_list=[]
     for i in range(cluster_array.shape[0]):
         distances = []
+        #print(centroids)
         for centroid in centroids:
             distances.append(calc_distance(centroid,cluster_array[i]))
         #print(distances)
         cluster = [z for z, val in enumerate(distances) if val==min(distances)]   #index and min_distance
         #clusters.append(cluster[0])
+        #print(cluster)
         if(min(distances)<=mindis1 and cluster[0]==0):
             cluster_head1=get_key(cluster_array[i],clients)
             mindis1=min(distances)
-        if(min(distances)<=mindis2 and cluster[0]==1):
+        elif(min(distances)<=mindis2 and cluster[0]==1):
             cluster_head2=get_key(cluster_array[i],clients)
             mindis2=min(distances)
+        elif(min(distances)<=mindis3 and cluster[0]==2):
+            cluster_head3=get_key(cluster_array[i],clients)
+            mindis3=min(distances)
+            
+            #print("check bitvch",cluster_head3)
         #print(60*math.exp(-min(distances))+random.uniform(-10,10))
             
     for i in range(cluster_array.shape[0]):
@@ -69,35 +89,56 @@ def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
             if(cluster_head2 in path_loss_list[m] and get_key(cluster_array[i],clients) in path_loss_list[m]):
                 path_loss2=path_loss_list[m][2]
                 noise2=noise_list[m][2]
+            if(cluster_head3 in path_loss_list[m] and get_key(cluster_array[i],clients) in path_loss_list[m]):
+                path_loss3=path_loss_list[m][2]
+                noise3=noise_list[m][2]
                 break
         snr1=path_loss1-noise1
         snr2=path_loss2-noise2
+        snr3=path_loss3-noise3
         #print(snr1,snr2)
         #print(path_loss1,path_loss2)
-        if(snr1>=snr2):#distances[0]<=distances[1]):
+        if(snr1>=snr2 and snr1>=snr3):#distances[0]<=distances[1]):
             #clusters.pop()
             clusters.append(0)
             snr_list.append([cluster_head1,get_key(cluster_array[i],clients),snr1])
-        else:
+        elif(snr2>=snr1 and snr2>=snr3):#distances[0]<=distances[1]):
             #clusters.pop()
             clusters.append(1)
             snr_list.append([cluster_head2,get_key(cluster_array[i],clients),snr2])
+        else:
+            #clusters.pop()
+            clusters.append(2)
+            snr_list.append([cluster_head3,get_key(cluster_array[i],clients),snr3])
             #print(path_loss1,path_loss2)
     
     for m in range(len(path_loss_list)):
             if(cluster_head1 in path_loss_list[m] and cluster_head2 in path_loss_list[m]):
                 path_loss1=path_loss_list[m][2]
                 noise1=noise_list[m][2]
-                snr1=0.6*path_loss1-0.4*noise1
+                snr1=path_loss1-noise1
+                snr_list.append([cluster_head1,cluster_head2,snr1])
+                break
+            if(cluster_head1 in path_loss_list[m] and cluster_head3 in path_loss_list[m]):
+                path_loss1=path_loss_list[m][2]
+                noise1=noise_list[m][2]
+                snr1=path_loss1-noise1
+                snr_list.append([cluster_head1,cluster_head3,snr1])
+                break
+            if(cluster_head3 in path_loss_list[m] and cluster_head2 in path_loss_list[m]):
+                path_loss1=path_loss_list[m][2]
+                noise1=noise_list[m][2]
+                snr1=path_loss1-noise1
+                snr_list.append([cluster_head3,cluster_head2,cluster_head3,snr1])
                 break
     
     #print(snr1,snr2)
         
-    snr_list.append([cluster_head1,cluster_head2,snr1])
+    
         
     
     #print(cluster_head1,cluster_head2)
-    return (clusters,cluster_head1,cluster_head2,snr_list)
+    return (clusters,cluster_head1,cluster_head2,cluster_head3,snr_list)
 
 # Calculate new centroids based on each cluster's mean
 def calc_centroids(clusters, cluster_array):
@@ -105,10 +146,12 @@ def calc_centroids(clusters, cluster_array):
     cluster_df = pd.concat([pd.DataFrame(cluster_array),
                             pd.DataFrame(clusters,columns=['cluster'])], 
                            axis=1)
+
     for c in set(cluster_df['cluster']):
         current_cluster = cluster_df[cluster_df['cluster']==c][cluster_df.columns[:-1]]
         cluster_mean = current_cluster.mean(axis=0)
         new_centroids.append(cluster_mean)
+    #print(clusters)
     return new_centroids
 
 def path_loss_calc(clients):
@@ -139,7 +182,7 @@ def noise(clients):
             noise_list.append(['client'+str(i+1),'client'+str(j+1),noise])
     return(noise_list)
 
-def get_clusters(number=30):
+def get_clusters(number=30,n=3):
     cluster_array, _ = make_classification(n_samples=number, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)#50
     #cluster_array, _ = make_blobs(n_samples=30,n_features=2, centers=2)
     #print(cluster_array)
@@ -156,18 +199,18 @@ def get_clusters(number=30):
     # print(path_loss[7])
     #print(path_loss)
     
-    k = 2
+    k = n
     cluster_vars = []
-    centroids = [cluster_array[i+2] for i in range(k)]
-    clusters,cluster_head1,cluster_head2,snr_list=assign_clusters(centroids, cluster_array,clients,path_loss,noise_list)
+    centroids = [cluster_array[i] for i in range(k)]
+    clusters,cluster_head1,cluster_head2,cluster_head3,snr_list=assign_clusters(centroids, cluster_array,clients,path_loss,noise_list)
     initial_clusters = clusters
     #print(centroids)
     
     
-    for i in range(20):
+    for i in range(30):
         centroids = calc_centroids(clusters, cluster_array)
-        clusters,cluster_head1,cluster_head2,snr_list=assign_clusters(centroids,cluster_array,clients,path_loss,noise_list)
-    
+        clusters,cluster_head1,cluster_head2,cluster_head3,snr_list=assign_clusters(centroids,cluster_array,clients,path_loss,noise_list)
+        #print("suppppppppp",cluster_head3)
     
     
 
@@ -175,31 +218,40 @@ def get_clusters(number=30):
     #print(snr_list)
     member1=[]
     member2=[]
+    member3=[]
     for ii in range(len(clusters)):
         client="client"+str(ii+1)
         if(clusters[ii]==0 and client!=cluster_head1):
             member1.append(client)
         elif(clusters[ii]==1 and client!=cluster_head2):
             member2.append(client)
+        elif(clusters[ii]==2 and client!=cluster_head3):
+            member3.append(client)
     
         #print(len(clusters))
-    if(len(member1)>=7 and len(member2)>=7):
+    if(len(member1)>=4 and len(member2)>=4 and len(member3)>=4):
         x=[k[0] for k in cluster_array]
         #print(x)
         y=[k[1] for k in cluster_array]
         for i in range(number):
             if(clusters[i]==0):
                 color='blue'
-            else:
+            elif(clusters[i]==1):
                 color='red'
+            else:
+                color='orange'
             pyplot.scatter(x[i],y[i],c=color)
         
         
         ch1=clients[cluster_head1]
         ch2=clients[cluster_head2]
+        #print("heyyyyyyyy",cluster_head3)
+        ch3=clients[cluster_head3]
+        
         
         pyplot.scatter(ch1[0],ch1[1],c='green')
         pyplot.scatter(ch2[0],ch2[1],c='green')
+        pyplot.scatter(ch3[0],ch3[1],c='green')
         
         
         ##path_loss1=[]
@@ -214,8 +266,8 @@ def get_clusters(number=30):
         
         
         snrl=list(i[2] for i in snr_list)
-        print(min(snrl))
-        print(max(snrl))
+        # print(min(snrl))
+        # print(max(snrl))
         ##midd=((min(snrl)+max(snrl))/2)
         ##print(cluster_head1)
         ##print(cluster_head2)
@@ -230,7 +282,7 @@ def get_clusters(number=30):
         colors={0:'b',1:'g',2:'c',3:'y',4:'m',5:'r',6:'k'}
         cmap = pyplot.get_cmap('jet', 10)
         cmap=cmap.reversed()
-        print(cmap)
+        #print(cmap)
         for ii in range(len(snr_list)):
             client_a=snr_list[ii][0]
             client_b=snr_list[ii][1]
@@ -274,8 +326,10 @@ def get_clusters(number=30):
         csi_list.append((cl1,cl2,csi))
     clus1={"Cluster Head":cluster_head1,"Members":member1,"SNR":snr_list,"CSI":csi_list}
     clus2={"Cluster Head":cluster_head2,"Members":member2,"SNR":snr_list,"CSI":csi_list}
+    clus3={"Cluster Head":cluster_head3,"Members":member3,"SNR":snr_list,"CSI":csi_list}
     arranged_clusters.append(clus1)
     arranged_clusters.append(clus2)
+    arranged_clusters.append(clus3)
     #print(snr_list)
     return(arranged_clusters)
 
@@ -284,17 +338,21 @@ def cluster_former():
     arranged_clusters=get_clusters()
     clus1=arranged_clusters[0]['Members']
     clus2=arranged_clusters[1]['Members']
+    clus3=arranged_clusters[2]['Members']
     
     
-    while(len(clus1)<=7 or len(clus2)<=7):
+    while(len(clus1)<=7 or len(clus2)<=7 or len(clus3)<=7):
         arranged_clusters=get_clusters()
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']
-    print(len(clus1))
-    print(len(clus2))
+        clus3=arranged_clusters[2]['Members']
+    # print(len(clus1))
+    # print(len(clus2))
+    # print(len(clus3))
     
-    #print(arranged_clusters)
+    #print(len(arranged_clusters))
     return(arranged_clusters)
+
     
 
 cluster_former()

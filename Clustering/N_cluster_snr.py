@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Oct  3 11:29:50 2021
-
-@author: Ayush
-"""
-
-
-# k-means clustering
 from numpy import unique
 from numpy import where
 from sklearn.datasets import make_classification
@@ -37,7 +28,7 @@ def get_key(val,my_dict):
              return key
 
 def calc_distance(X1, X2):
-    return ((sum((X1 - X2)**2))**0.5)  #increasing spread here
+    return ((sum((X1 - X2)*2))*0.5)  #increasing spread here
 
 # Assign cluster clusters based on closest centroid
 def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
@@ -111,27 +102,35 @@ def assign_clusters(centroids, cluster_array,clients,path_loss_list,noise_list):
             clusters.append(2)
             snr_list.append([cluster_head3,get_key(cluster_array[i],clients),snr3])
             #print(path_loss1,path_loss2)
-    
+
+
+    container=[]
     for m in range(len(path_loss_list)):
             if(cluster_head1 in path_loss_list[m] and cluster_head2 in path_loss_list[m]):
                 path_loss1=path_loss_list[m][2]
                 noise1=noise_list[m][2]
                 snr1=path_loss1-noise1
                 snr_list.append([cluster_head1,cluster_head2,snr1])
-                break
-            if(cluster_head1 in path_loss_list[m] and cluster_head3 in path_loss_list[m]):
+                container.append(1)
+                
+                
+            elif(cluster_head1 in path_loss_list[m] and cluster_head3 in path_loss_list[m]):
                 path_loss1=path_loss_list[m][2]
                 noise1=noise_list[m][2]
                 snr1=path_loss1-noise1
+                #print("2")
                 snr_list.append([cluster_head1,cluster_head3,snr1])
-                break
-            if(cluster_head3 in path_loss_list[m] and cluster_head2 in path_loss_list[m]):
+                container.append(2)
+                
+            elif(cluster_head3 in path_loss_list[m] and cluster_head2 in path_loss_list[m]):
                 path_loss1=path_loss_list[m][2]
                 noise1=noise_list[m][2]
                 snr1=path_loss1-noise1
-                snr_list.append([cluster_head3,cluster_head2,cluster_head3,snr1])
-                break
-    
+                #print("3")
+                snr_list.append([cluster_head3,cluster_head2,snr1])
+                container.append(3)
+            
+            
     #print(snr1,snr2)
         
     
@@ -229,7 +228,7 @@ def get_clusters(number=33,n=3):
             member3.append(client)
     
         #print(len(clusters))
-    if(len(member1)>=4 and len(member2)>=4 and len(member3)>=4):
+    if(len(member1)>4 and len(member2)>4 and len(member3)>4):
         x=[k[0] for k in cluster_array]
         #print(x)
         y=[k[1] for k in cluster_array]
@@ -265,7 +264,10 @@ def get_clusters(number=33,n=3):
         ##ax.set_ylabel('Signal Power')
         
         
-        snrl=list(i[2] for i in snr_list)
+        f_snrl=list(i[2] for i in snr_list)
+        snrl=[]
+        for iiii in range(len(f_snrl)):
+            snrl.append(f_snrl[iiii])
         # print(min(snrl))
         # print(max(snrl))
         ##midd=((min(snrl)+max(snrl))/2)
@@ -295,13 +297,15 @@ def get_clusters(number=33,n=3):
             index=np.searchsorted(intervals,snr)
             #print(colors[index])
             pyplot.plot([point_a[0],point_b[0]],[point_a[1],point_b[1]],color=cmap(index),linewidth=1.5)
+            
         norm = matplotlib.colors.Normalize(vmin=min(snrl), vmax=max(snrl))
         sm = pyplot.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
           
         cbar=pyplot.colorbar(sm, ticks=np.linspace(min(snrl), max(snrl), 10))
         cbar.set_label("Signal-to-Noise Ratio")  
-            
+        pyplot.xlabel("X co-ordinates")
+        pyplot.ylabel("Y co-ordinates")    
         ##for i in range(len(clients)):
         ##    for j in range(i,len(clients)):
         ##        point1=clients[i]
@@ -356,4 +360,3 @@ def cluster_former():
     
 
 cluster_former()
-

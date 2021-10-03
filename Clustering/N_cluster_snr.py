@@ -341,7 +341,7 @@ def cluster_former():
     clus3=arranged_clusters[2]['Members']
     
     
-    while(len(clus1)<=4 or len(clus2)<=4 or len(clus3)<=4):
+    while(len(clus1)<=6 or len(clus2)<=6 or len(clus3)<=6):
         arranged_clusters=get_clusters()
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']

@@ -182,7 +182,7 @@ def noise(clients):
             noise_list.append(['client'+str(i+1),'client'+str(j+1),noise])
     return(noise_list)
 
-def get_clusters(number=30,n=3):
+def get_clusters(number=33,n=3):
     cluster_array, _ = make_classification(n_samples=number, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1, random_state=None)#50
     #cluster_array, _ = make_blobs(n_samples=30,n_features=2, centers=2)
     #print(cluster_array)
@@ -341,7 +341,7 @@ def cluster_former():
     clus3=arranged_clusters[2]['Members']
     
     
-    while(len(clus1)<=9 or len(clus2)<=9 or len(clus3)<=9):
+    while(len(clus1)<=7 or len(clus2)<=7 or len(clus3)<=7):
         arranged_clusters=get_clusters()
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']

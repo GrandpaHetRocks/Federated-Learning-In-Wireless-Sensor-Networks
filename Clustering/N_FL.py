@@ -370,7 +370,7 @@ for fed_round in range(args.rounds):
     for ij in members3:
         #print(ij)
         cl_no=int(ij[6:])
-        new_members2.append(clients[cl_no-1])
+        new_members3.append(clients[cl_no-1])
     
     arranged_clusters[0]['Members']=new_members1
     arranged_clusters[1]['Members']=new_members2

@@ -53,7 +53,7 @@ key_np=np.array(key1)
 class Arguments():
     def __init__(self):
         self.images = 10000
-        self.clients = 50
+        self.clients = 30
         self.rounds = 200
         self.epochs = 3
         self.local_batches = 64
@@ -62,7 +62,7 @@ class Arguments():
         self.drop_rate = 0.1 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'iid'
+        self.iid = 'noniid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = False
@@ -104,8 +104,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 5) #20
-        self.fc2 = nn.Linear(5, 10) #20
+        self.fc1 = nn.Linear(4*4*10, 200) #noniid:200 iid:5
+        self.fc2 = nn.Linear(200, 10) #200
 
     def forward(self, x):
         #x=self.quant(x)

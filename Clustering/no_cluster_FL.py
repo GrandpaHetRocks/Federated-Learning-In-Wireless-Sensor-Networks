@@ -53,7 +53,7 @@ key_np=np.array(key1)
 class Arguments():
     def __init__(self):
         self.images = 10000
-        self.clients = 30
+        self.clients = 50
         self.rounds = 200
         self.epochs = 3
         self.local_batches = 64
@@ -62,7 +62,7 @@ class Arguments():
         self.drop_rate = 0.1 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'noniid'
+        self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = False

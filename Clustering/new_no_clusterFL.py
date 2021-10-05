@@ -112,8 +112,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 500) #noniid:500 iid:5
-        self.fc2 = nn.Linear(500, 10) #200
+        self.fc1 = nn.Linear(4*4*10, 5) #noniid:500 iid:5
+        self.fc2 = nn.Linear(5, 10) #200
 
     def forward(self, x):
         #x=self.quant(x)

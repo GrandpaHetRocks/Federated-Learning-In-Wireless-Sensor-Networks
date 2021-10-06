@@ -217,6 +217,33 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
             
                     
     client['model'].get()
+     #CHANGE
+    if(poptim!=0):
+        data=client['model'].conv1.weight
+        #data=data.cuda()
+        data=data*math.sqrt(poptim) #transmitted signal
+        #print(power)
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
+        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
+        data=data.real #demodulating received data
+        client['model'].conv1.weight.data=data
+        
+        
+        
+        data=client['model'].conv2.weight
+        #data=data.cuda()
+        data=data*math.sqrt(poptim) #transmitted signal
+        if(use_cuda):
+            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
+        else:
+            data=h*data+(torch.randn(data.size())*std)
+        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
+        data=data.real #demodulating received data
+        client['model'].conv2.weight.data=data
+    #CHANGE ENDS
     print()
     return gc
 

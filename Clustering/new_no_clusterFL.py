@@ -355,7 +355,7 @@ for fed_round in range(args.rounds):
     
     # if(fed_round==0):
     #     snr,cluster_head=get_cluster()
-    if(fed_round==0): #fed_round==0
+    if(True): #fed_round==0
         snr,cluster_head=get_cluster()
         temp=copy.deepcopy(cluster_head)
         temp1=copy.deepcopy(snr)

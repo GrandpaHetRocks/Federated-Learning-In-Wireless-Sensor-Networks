@@ -49,14 +49,14 @@ class Arguments():
         self.images = 10000
         self.clients = 30
         self.rounds = 200
-        self.epochs = 3 #5 for non iid
+        self.epochs = 4 #4 for non iid
         self.local_batches = 64
         self.lr = 0.01
         self.C = 1 #fraction of clients used in the round
         self.drop_rate = 0 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'iid'
+        self.iid = 'noniid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = False

@@ -220,7 +220,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         print("Poor Channel, client not taken for averaging in this round")
             
                     
-    #client['model'].get() #CHANGE
+    client['model'].get() 
     #CHANGE
     if(poptim!=0):
         data=client['model'].conv1.weight
@@ -240,7 +240,6 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         data=data.real #demodulating received data
         client['model'].conv2.weight.data=data
     #CHANGE ENDS
-    client['model'].get()
     print()
     return gc
 

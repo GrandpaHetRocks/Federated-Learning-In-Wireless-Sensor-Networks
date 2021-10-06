@@ -100,8 +100,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 50) #..,20
-        self.fc2 = nn.Linear(50, 10) #20,5  20 non iid 5 iid
+        self.fc1 = nn.Linear(4*4*10, 50) #..,50
+        self.fc2 = nn.Linear(50, 10) #50,5  50 non iid 5 iid
 
     def forward(self, x):
         #x=self.quant(x)
@@ -347,7 +347,7 @@ temp=[]
 snrplot=[]
 for fed_round in range(args.rounds):
     overall=Net()
-    if(fed_round==0): #fed_round==0 or True
+    if(True): #fed_round==0 or True
         arranged_clusters=cluster_former()
         temp=copy.deepcopy(arranged_clusters)
     else:

@@ -495,7 +495,7 @@ for fed_round in range(args.rounds):
     index=0
     for client in clients:
         client['model'].load_state_dict(overall.state_dict())
-        client=CLientReturn(client,snr[index],csi[index],smallmu1)
+        #client=CLientReturn(client,snr[index],csi[index],smallmu1)  #CHANGE: commented
         index+=1
 
 

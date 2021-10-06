@@ -26,7 +26,7 @@ import copy
 P=2 #signal power threshold
 #stream = BitStream()
 
-random.seed(97)
+#random.seed(97)
 key=[]
 for i in range (10000): #generating a random password to activate training (Pilot signal)
     temp=random.randint(0,1)
@@ -56,7 +56,7 @@ class Arguments():
         self.drop_rate = 0 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'noniid'
+        self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = False
@@ -100,8 +100,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 50) #..,50
-        self.fc2 = nn.Linear(50, 10) #50,5  50 non iid 5 iid
+        self.fc1 = nn.Linear(4*4*10, 5) #..,50
+        self.fc2 = nn.Linear(5, 10) #50,5  50 non iid 5 iid
 
     def forward(self, x):
         #x=self.quant(x)

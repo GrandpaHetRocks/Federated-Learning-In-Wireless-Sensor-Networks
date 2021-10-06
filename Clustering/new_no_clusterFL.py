@@ -220,7 +220,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         print("Poor Channel, client not taken for averaging in this round")
             
                     
-    client['model'].get()
+    #client['model'].get() #CHANGE
     #CHANGE
     if(poptim!=0):
         data=client['model'].conv1.weight
@@ -240,6 +240,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         data=data.real #demodulating received data
         client['model'].conv2.weight.data=data
     #CHANGE ENDS
+    client['model'].get()
     print()
     return gc
 
@@ -353,9 +354,9 @@ for fed_round in range(args.rounds):
         #snr.append(random.uniform(args.snr_low, args.snr_high))
         csi.append(random.uniform(args.csi_low,args.csi_high))
     
-    if(fed_round==0):
-        snr,cluster_head=get_cluster()
-    if(True): #fed_round==0
+    # if(fed_round==0):
+    #     snr,cluster_head=get_cluster()
+    if(fed_round==0): #fed_round==0
         snr,cluster_head=get_cluster()
         temp=copy.deepcopy(cluster_head)
         temp1=copy.deepcopy(snr)

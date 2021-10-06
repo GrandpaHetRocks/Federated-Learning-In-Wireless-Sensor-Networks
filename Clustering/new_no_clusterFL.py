@@ -221,6 +221,25 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
             
                     
     client['model'].get()
+    #CHANGE
+    if(poptim!=0):
+        data=client['model'].conv1.weight
+        data=data*math.sqrt(poptim) #transmitted signal
+        #print(power)
+        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
+        data=data.real #demodulating received data
+        client['model'].conv1.weight.data=data
+        
+        
+        
+        data=client['model'].conv2.weight
+        data=data*math.sqrt(poptim) #transmitted signal
+        data=h*data+(torch.randn(data.size())*std) #channel affecting data
+        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
+        data=data.real #demodulating received data
+        client['model'].conv2.weight.data=data
+    #CHANGE ENDS
     print()
     return gc
 
@@ -432,7 +451,7 @@ for fed_round in range(args.rounds):
     index=0
     for client in members:
         client['model'].load_state_dict(head['model'].state_dict())
-        client=CLientReturn(client,snr[index],csi[index],smallmu1)
+        #client=CLientReturn(client,snr[index],csi[index],smallmu1) #CHANGE:Commented
         index+=1
         #client['model']=torch.quantization.quantize_dynamic(client['model'],{torch.nn.Conv2d},dtype=torch.qint8)
         #print(client['model'].conv1.weight.data)

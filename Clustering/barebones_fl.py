@@ -78,7 +78,7 @@ class Arguments():
         self.drop_rate = 0.1 #fraction of devices in the selected set to be dropped for various reasons
         self.torch_seed = 0 #same weights and parameters whenever the program is run
         self.log_interval = 64
-        self.iid = 'noniid'
+        self.iid = 'iid'
         self.split_size = int(self.images / self.clients)
         self.samples = self.split_size / self.images 
         self.use_cuda = False
@@ -363,7 +363,7 @@ for fed_round in range(args.rounds):
     
     # if(fed_round==0):
     #     snr,cluster_head=get_cluster()
-    if(True): #fed_round==0
+    if(fed_round==0): #fed_round==0
         snr,cluster_head=get_cluster()
         temp=copy.deepcopy(cluster_head)
         temp1=copy.deepcopy(snr)

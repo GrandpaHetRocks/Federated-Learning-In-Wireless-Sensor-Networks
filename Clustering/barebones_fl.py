@@ -173,7 +173,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         data=h*data+(torch.randn(data.size())*std) #channel affecting data
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
-        client['model'].conv1.weight.data=data-1000
+        client['model'].conv1.weight.data=data
         
         
         

@@ -143,7 +143,8 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     print("Power Allocated=",poptim)
     print("CSI=",csi)
     
-    snr__=10**((snr-10)/10)
+    snr=snr-10
+    snr__=10**((snr)/10)
     
     absh=csi*poptim/snr__
     x=random.uniform(0,absh)
@@ -172,7 +173,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
         data=h*data+(torch.randn(data.size())*std) #channel affecting data
         data=data/(math.sqrt(poptim)*(h))  #demodulating received data
         data=data.real #demodulating received data
-        client['model'].conv1.weight.data=data
+        client['model'].conv1.weight.data=data-1000
         
         
         

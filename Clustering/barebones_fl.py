@@ -143,7 +143,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     print("Power Allocated=",poptim)
     print("CSI=",csi)
     
-    snr__=10**((snr-2)/10)
+    snr__=10**((snr-5)/10)
     
     absh=csi*poptim/snr__
     x=random.uniform(0,absh)

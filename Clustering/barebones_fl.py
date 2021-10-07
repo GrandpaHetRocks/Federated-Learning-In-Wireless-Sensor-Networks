@@ -138,7 +138,7 @@ def ClientUpdate(args, device, client,key_np,key,snr,csi,mu):
     gc=False
     client['model'].train()
     #simulating a wireless channel
-    poptim=max((1/mu-1/csi),0)
+    poptim=2
     #print(mu,csi)
     print("Power Allocated=",poptim)
     print("CSI=",csi)

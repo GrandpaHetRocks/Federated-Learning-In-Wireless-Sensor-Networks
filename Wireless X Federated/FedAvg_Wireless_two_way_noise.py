@@ -20,7 +20,7 @@ from Dataset import load_dataset, getImage
 from utils import averageModels
 import random
 import math
-from bitstring import *
+# from bitstring import *
 
 P=2 #signal power
 #stream = BitStream()

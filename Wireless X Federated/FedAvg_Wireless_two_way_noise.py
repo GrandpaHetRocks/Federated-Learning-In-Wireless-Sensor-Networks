@@ -52,7 +52,7 @@ class Arguments():
     def __init__(self):
         self.images = 10000
         self.clients = 30
-        self.rounds = 2
+        self.rounds = 200
         self.epochs = 5
         self.local_batches = 64
         self.lr = 0.01
@@ -239,7 +239,7 @@ def CLientReturn(clients,key,key_np,power):
     for client in clients:
         #client['model'].train()
         #simulating a wireless channel
-        snr=random.randint(0,40)   #tamper here to make the channel good/bad :P
+        snr=random.randint(0,25)   #tamper here to make the channel good/bad :P
         #snr=40
         print("SNR= ",snr)
         print("Client:",client['hook'].id)

@@ -112,7 +112,7 @@ def mnistnonIIDUnequal(dataset,num_users,test):#calsses are there but each clien
 
 def load_dataset(num_users,iidtype):#this function helps load the datasets we made using mnistIID
     transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.1307,),(0.3081,))])
-    trainset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
+    trainset=torchvision.datasets.MNIST(root="./",train= True,transform=transform,download=False)
     testset=torchvision.datasets.MNIST(root="./",train= False,transform=transform,download=False)
     train_group=None
     test_group=None

@@ -91,7 +91,9 @@ for inx, client in enumerate(clients):  #return actual image set for each client
 
 #load dataset for global model (to compare accuracies)
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-global_test_dataset = datasets.MNIST('./', train=False, download=True, transform=transform)
+global_test_dataset = datasets.MNIST('./', train=True, download=True, transform=transform)
+global_test_dataset = torch.utils.data.random_split(global_test_dataset, [200, len(testset)-200])[0]
+
 global_test_loader = DataLoader(global_test_dataset, batch_size=args.local_batches, shuffle=True)
 
 class Net(nn.Module):

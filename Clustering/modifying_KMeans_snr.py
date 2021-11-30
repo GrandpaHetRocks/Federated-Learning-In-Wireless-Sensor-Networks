@@ -215,8 +215,6 @@ def get_clusters(number=30):
         
         
         snrl=list(i[2] for i in snr_list)
-        print(min(snrl))
-        print(max(snrl))
         ##midd=((min(snrl)+max(snrl))/2)
         ##print(cluster_head1)
         ##print(cluster_head2)
@@ -231,7 +229,7 @@ def get_clusters(number=30):
         colors={0:'b',1:'g',2:'c',3:'y',4:'m',5:'r',6:'k'}
         cmap = pyplot.get_cmap('jet', 10)
         cmap=cmap.reversed()
-        print(cmap)
+        # print(cmap)
         for ii in range(len(snr_list)):
             client_a=snr_list[ii][0]
             client_b=snr_list[ii][1]
@@ -291,8 +289,8 @@ def cluster_former():
         arranged_clusters=get_clusters()
         clus1=arranged_clusters[0]['Members']
         clus2=arranged_clusters[1]['Members']
-    print(len(clus1))
-    print(len(clus2))
+    # print(len(clus1))
+    # print(len(clus2))
     
     #print(arranged_clusters)
     return(arranged_clusters)

@@ -455,4 +455,3 @@ for fed_round in range(args.rounds):
 plt.show()
 #plt.savefig('result_cluster.png')
 print(acf)
-print(snrplot)

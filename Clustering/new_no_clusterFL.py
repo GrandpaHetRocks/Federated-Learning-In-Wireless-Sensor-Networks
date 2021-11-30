@@ -269,60 +269,6 @@ def test(args, model, device, test_loader, name):
     
     return(100. * correct / len(test_loader.dataset))
 
-def CLientReturn(client,snr,csi,mu):
-    poptim=max((1/mu-1/csi),0)
-    #print(mu,csi)
-    print("Power Allocated=",poptim)
-    print("CSI=",csi)
-    
-    snr__=10**(snr/10)
-    
-    absh=csi*poptim/snr__
-    x=random.uniform(0,absh)
-    #print(x)
-    y=math.sqrt(absh*absh-x*x)
-    #x=x*100
-    #y=y*100
-    #x=random.random()
-    #y=random.random()
-    #snr=10*math.log(poptim/(std*std),10)
-    std=math.sqrt(poptim/snr__*absh*absh) #channel noise
-    
-    #print(x,y)
-    h=complex(x,y)
-    #std=math.sqrt(abs(h)/csi)
-    #snr=poptim/(std*std)
-    #print(std)
-    print("SNR=",snr)
-    #print("csi",abs(h)/(std*std))
-    
-    
-    if(poptim!=0):
-        data=client['model'].conv1.weight
-        #data=data.cuda()
-        data=data*math.sqrt(poptim) #transmitted signal
-        #print(power)
-        if(use_cuda):
-            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
-        else:
-            data=h*data+(torch.randn(data.size())*std)
-        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
-        data=data.real #demodulating received data
-        client['model'].conv1.weight.data=data
-        
-        
-        
-        data=client['model'].conv2.weight
-        #data=data.cuda()
-        data=data*math.sqrt(poptim) #transmitted signal
-        if(use_cuda):
-            data=h*data+(torch.randn(data.size())*std).cuda() #channel affecting data
-        else:
-            data=h*data+(torch.randn(data.size())*std)
-        data=data/(math.sqrt(poptim)*(h))  #demodulating received data
-        data=data.real #demodulating received data
-        client['model'].conv2.weight.data=data
-    return(client)
 
    
 torch.manual_seed(args.torch_seed)

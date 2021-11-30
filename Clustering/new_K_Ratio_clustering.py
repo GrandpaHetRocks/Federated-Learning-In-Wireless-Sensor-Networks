@@ -493,10 +493,15 @@ for fed_round in range(args.rounds):
     overall=averageModelscluster(overall,[head1,head2],[weight1,weight2])
     acf.append(test(args,overall, device, global_test_loader, "Final ",fed_round))
     index=0
+    # for client in clients:
+    #     client['model'].load_state_dict(overall.state_dict())
+    #     client=CLientReturn(client,snr[index],csi[index],smallmu1)
+    #     index+=1
     for client in clients:
         client['model'].load_state_dict(overall.state_dict())
-        client=CLientReturn(client,snr[index],csi[index],smallmu1)
+        #client=CLientReturn(client,snr[index],csi[index],smallmu1)  #CHANGE: commented
         index+=1
+
 
 
 

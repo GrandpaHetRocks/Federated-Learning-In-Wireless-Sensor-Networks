@@ -112,8 +112,8 @@ class Net(nn.Module):
         #self.quant = torch.quantization.QuantStub()
         self.conv1 = nn.Conv2d(1, 5, 5, 1)
         self.conv2 = nn.Conv2d(5, 10, 5, 1)
-        self.fc1 = nn.Linear(4*4*10, 5) #noniid:50 iid:5
-        self.fc2 = nn.Linear(5, 10) #50
+        self.fc1 = nn.Linear(4*4*10, 20) #noniid:50 iid:5
+        self.fc2 = nn.Linear(20, 10) #50
 
     def forward(self, x):
         #x=self.quant(x)
@@ -301,7 +301,7 @@ for fed_round in range(args.rounds):
     
     # if(fed_round==0):
     #     snr,cluster_head=get_cluster()
-    if(True): #fed_round==0 or True
+    if(True): #fed_round==0 or True                                        %%%static or moving
         snr,cluster_head=get_cluster()
         temp=copy.deepcopy(cluster_head)
         temp1=copy.deepcopy(snr)
